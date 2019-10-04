@@ -1,6 +1,9 @@
 
-# --
-# --
+# -- ------------------------------------------------------------------------------------------------------------- -- #
+# -- Proyecto: Generación y visualización de pseudo-aleatorios
+# -- Codigo: pseudo-aleatorios.py
+# -- Autor: Francisco ME
+# -- ------------------------------------------------------------------------------------------------------------- -- #
 
 # Importar librerias
 import numpy as np
