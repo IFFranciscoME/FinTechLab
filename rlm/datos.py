@@ -26,7 +26,7 @@ A1_OA_At = "practice"             # Tipo de cuenta
 A1_OA_In = "USD_MXN"              # Instrumento
 A1_OA_Gn = "D"                    # Granularidad de velas
 
-A1_OA_Ak = '1' + '1faa346ad5346935919f18cb9ce1d51-0cf8129d81cfa85a1c53c3b57a04014' + '7'
+A1_OA_Ak = '7' + '9ae0a52f8e483facdd81f5b316a8ef8-99fb5554f4739c76535b209044f7de2' + '6'
 
 FechaIni = "2019-01-07T00:00:00Z"
 FechaFin = "2019-08-30T00:00:00Z"
