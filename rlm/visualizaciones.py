@@ -24,10 +24,13 @@ def g_velasdd(p0_de, p1_pa):
     :param p1_pa: parametro de si fue 'sell' o 'buy' para color de lineas
     :return fig:
 
-    p0_de = datos_dd
+    p0_de = datos
     p1_pa = 'sell'
     datos_dd = pd.DataFrame({'timestamp': [], 'open': [], 'high': [], 'low': [], 'close': []}, index=[])
     """
+
+    # convertir a minusculas todos los nombres de columnas
+    p0_de.columns = [p0_de.columns[i].lower() for i in range(0, len(p0_de.columns))]
 
     # p0_de['timestamp'] = [(pd.to_datetime(p0_de['timestamp']))[x].tz_localize('UTC')
     #                           for x in range(0, len(p0_de['timestamp']))]
@@ -83,3 +86,11 @@ def g_velasdd(p0_de, p1_pa):
 # data = [trace1, trace2]
 # fig = go.Figure(data=data, layout=layout)
 # fig.show()
+# Scientific libraries
+# xi = arange(0, 9)
+# A = array([xi, ones(9)])
+# y = [19, 20, 20.5, 21.5, 22, 23, 23, 25.5, 24]
+#
+# # Generated linear fit
+# slope, intercept, r_value, p_value, std_err = stats.linregress(xi, y)
+# line = slope*xi + intercept
