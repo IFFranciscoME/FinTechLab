@@ -10,10 +10,6 @@ import pandas as pd
 from oandapyV20 import API
 import oandapyV20.endpoints.instruments as instruments
 
-pd.set_option('display.max_rows', 1000)
-pd.set_option('display.max_columns', 200)
-pd.set_option('display.width', 1000)
-
 # -- --------------------------------------------------------------------------------------- Parametros para OANDA -- #
 # -- --------------------------------------------------------------------------------------- --------------------- -- #
 

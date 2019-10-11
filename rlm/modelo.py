@@ -9,6 +9,7 @@ import numpy as np                                        # tratamiento cientifi
 import pandas as pd                                       # dataframes
 import statsmodels.api as sm                              # modelos estadisticos
 from datetime import datetime                             # tratamiento de datetime
+from functools import reduce                              # Para la union de los dataframes
 
 from sklearn import linear_model                          # modelo lineal
 from rlm.datos import pd_hist as precios                  # importar precios
@@ -23,29 +24,34 @@ pd.options.mode.chained_assignment = None                 # Para evitar el warni
 
 # -- ------------------------------------------------------------------------------- Datos de CALENDARIO ECONOMICO -- #
 
-# Datos de entrada
-datos_ce = pd.read_csv('rlm/archivos/calendario_economico.csv')
-
-# Convertir columna de fechas a datetime
-datos_ce['DateTime'] = [datetime.strptime(datos_ce['DateTime'][i], '%m/%d/%Y %H:%M:%S')
-                        for i in range(0, len(datos_ce['DateTime']))]
-
 # Lista de indicadores economicos a utilizar
-indicadores = ['Continuing Jobless Claims', 'Initial Jobless Claims', '4-Week Bill Auction',
-               'CFTC USD NC Net Positions', 'CFTC Oil NC Net Positions']
-
-# Obtener los datos exclusivamente del indicador seleccionado
-prueba = datos_ce.loc[np.where(datos_ce.loc[:, 'Name'] == indicadores[0])]
-
-# Resetear el index de los datos encontrados
-prueba = prueba.reset_index(drop=True)
-
-# Agregar columna con numero de semana (Servira para empatar fecha de indicador con fecha de precio)
-prueba['semana'] = [prueba.loc[i, 'DateTime'].strftime("%W") for i in range(0, len(prueba['DateTime']))]
+indicadores = ['4-WeekBillAuction.csv', 'CFTCOilNCNetPositions.csv', 'CFTCUSDNCNetPositions.csv',
+               'ContinuingJoblessClaims.csv', 'InitialJoblessClaims.csv']
 
 
-# acomodar verticalmente los datos encontrados, que queden ordenados por fecha
-# -- --- Union de dataframes por fechas : crear un data frame donde esten empatados los datos por fechas
+def f_datos_ce(p0_ind):
+
+    # Datos de entrada
+    datos = pd.read_csv('rlm/archivos/' + p0_ind)
+
+    # Convertir columna de fechas a datetime
+    datos['DateTime'] = [datetime.strptime(datos['DateTime'][i], '%m/%d/%Y %H:%M:%S')
+                         for i in range(0, len(datos['DateTime']))]
+
+    # Agregar columna con numero de año y semana (Servira para empatar fecha de indicador con fecha de precio)
+    datos['Week'] = [datos.loc[i, 'DateTime'].strftime("%Y") + '_' +
+                     datos.loc[i, 'DateTime'].strftime("%W") for i in range(0, len(datos['DateTime']))]
+
+    # Solo tomar las columnas para el ejercicio
+    datos = datos[['Week', 'Actual']]
+
+    return datos
+
+
+dataframes = [f_datos_ce(p0_ind=indicadores[i]) for i in range(0, len(indicadores))]
+datos_ce = reduce(lambda left, right: pd.merge(left, right, on=['Week'], how='inner'), dataframes)
+datos_ce.columns = ['Year_Week', 'Bill', 'COT_Oil', 'COT_Usd', 'CJC', 'IJC']
+    
 
 # -- ---------------------------------------------------------------------------------------------- Datos de OANDA -- #
 
