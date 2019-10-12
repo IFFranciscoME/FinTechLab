@@ -16,10 +16,10 @@ import oandapyV20.endpoints.instruments as instruments
 A1_OA_Da = 16                      # Day Align
 A1_OA_Ai = "101-004-2221697-001"   # Id de cuenta
 A1_OA_At = "practice"              # Tipo de cuenta
-A1_OA_In = "USD_MXN"               # Instrumento
+A1_OA_In = "EUR_USD"               # Instrumento
 A1_OA_Gn = "W"                     # Granularidad de velas
-FechaIni = "2018-08-30T00:00:00Z"  # Fecha inicial
-FechaFin = "2019-08-30T00:00:00Z"  # Fecha final
+FechaIni = "2016-01-02T00:00:00Z"  # Fecha inicial
+FechaFin = "2019-09-30T00:00:00Z"  # Fecha final
 
 A1_OA_Ak = '7' + '9ae0a52f8e483facdd81f5b316a8ef8-99fb5554f4739c76535b209044f7de2' + '6'  # Token para API de OANDA
 
