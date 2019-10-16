@@ -35,6 +35,8 @@ directorio = getcwd() + '/archivos/'
 archivos_ce = [f for f in listdir(directorio) if isfile(join(directorio, f))]
 
 
+# -- Funcion para leer y acomodar los datos de cada archivo que este en la carpeta 'archivos'
+
 def f_datos_ce(p0_ind):
 
     # Datos de entrada
@@ -60,7 +62,7 @@ def f_datos_ce(p0_ind):
     return datos
 
 
-# Unir dataframes
+# Leer todos los archivos y unir los DataFrames
 dataframes = [f_datos_ce(p0_ind=archivos_ce[i]) for i in range(0, len(archivos_ce))]
 datos_ce = reduce(lambda left, right: pd.merge(left, right, on=['Year_Week'], how='inner'), dataframes)
 
@@ -115,7 +117,7 @@ g1 = vs.explora(datos_md)
 
 # Reacomodar los datos como arreglos
 y_multiple = np.array(datos_md.iloc[:, 1])
-x_multiple = np.array(datos_md.iloc[:, 3:])
+x_multiple = np.array(datos_md.iloc[:, 5:])
 
 # Varianza de la variable a explicar
 var_y = y_multiple.var()
@@ -134,25 +136,21 @@ res = pd.DataFrame({'Close_Actual': test_y, 'Close_Predicted': y_pred, 'Errores'
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 # -- ------------------------------------------------------------------------------------- Modelo con: statsmodels -- #
 
-str_modelo = 'Close ~ x_0 + x_2 + x_4 + x_5 + x_8 + x_10'
-
+str_modelo = 'Close ~ x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_10'
 mod = ols(formula=str_modelo, data=datos_md)
 resultado = mod.fit()
 resumen = resultado.summary()
-valores_p = resultado.pvalues
 
-# # Agregar interceptos a X en entrenamiento y prueba
-# train_x_betha = sm.add_constant(train_x)
-# test_x_betha = sm.add_constant(test_x)
+# Agregar interceptos a X en entrenamiento y prueba
+train_x_betha = sm.add_constant(train_x)
+test_x_betha = sm.add_constant(test_x)
 
-# # Modelo ajustado
-# modelo = sm.OLS(train_y, train_x_betha)
-# # Resultados de ajuste de modelo
-# resultados = modelo.fit()
-# # Resultados de predicciones de modelo
-# # Yhat = modelo.predict(train_x).fit()
-#
-# print(resultados.summary())
-# print('Parameters: ', resultados.params)
-# print('Standard errors: ', resultados.bse)
-# print('Predicted values: ', resultados.predict())
+# Modelo ajustado
+modelo = sm.OLS(train_y, train_x_betha)
+# Resultados de ajuste de modelo
+resultados = modelo.fit()
+
+print(resultados.summary())
+print('Parameters: ', resultados.params)
+print('Standard errors: ', resultados.bse)
+print('Predicted values: ', resultados.predict())
