@@ -103,4 +103,3 @@ for i in range(len(A1_Hist['candles'])-1):
 df_hist = pd.DataFrame(lista)
 df_hist['TimeStamp'] = pd.to_datetime(df_hist['TimeStamp'])
 df_hist = df_hist[['TimeStamp', 'Open', 'High', 'Low', 'Close']]
-    

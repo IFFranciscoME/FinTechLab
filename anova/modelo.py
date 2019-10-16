@@ -6,7 +6,6 @@
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
 import pandas as pd
-import numpy as np
 from datos import df_ice, df_hist
 
 pd.set_option('display.max_rows', None)                   # sin limite de renglones maximos para mostrar pandas
