@@ -6,7 +6,8 @@
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
 import pandas as pd
-from datos import df_ice, df_precios
+import numpy as np
+from datos import df_ce, df_pe
 
 pd.set_option('display.max_rows', None)                   # sin limite de renglones maximos para mostrar pandas
 pd.set_option('display.max_columns', None)                # sin limite de columnas maximas para mostrar pandas
@@ -22,6 +23,8 @@ pd.options.mode.chained_assignment = None                 # para evitar el warni
 
 # se define como tiempo inicial como aquel en el que se comunico el indicador
 
+np.where(df_pe == df_ce['timestamp'][0])
+
 # se define como precio inicial el precio de apertura en el tiempo inicial
 
 # para cada evento del indicador se hace una ventana de T tiempo con todos los precios OHLC
@@ -33,4 +36,4 @@ pd.options.mode.chained_assignment = None                 # para evitar el warni
 # Open - High  (a 10 minutos despues)
 
 # print(df_precios)
-# print(df_ice)
+# print(df_ce)

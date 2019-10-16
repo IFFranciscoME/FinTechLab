@@ -16,70 +16,67 @@ pd.options.mode.chained_assignment = None                 # para evitar el warni
 # -- --------------------------------------------------------------------------------- Datos: Calendario Economico -- #
 # -- --------------------------------------------------------------------------------------- --------------------- -- #
 
-df_ce = pd.read_csv(filepath_or_buffer='archivos/calendario_economico.csv')
+# leer archivo con informacion historica
+df_ce_ini = pd.read_csv(filepath_or_buffer='archivos/calendario_economico.csv')
 
-# -- Elegir datos de indicador
+# Elegir datos de indicador
 indicador = 'ISM Manufacturing PMI'
-df_ice = df_ce.iloc[np.where(df_ce['Name'] == indicador)[0], :]
-
-# cambiar nombre de 'datetime' a uno estandar que uso 'timestamp'
-df_ice = df_ice.rename(columns={'DateTime': 'timestamp'})
+df_ce = df_ce_ini.iloc[np.where(df_ce_ini['Name'] == indicador)[0], :]
 
 # cambiar a minusculas los nombres de las columnas
-columnas = list(df_ice.columns)
+columnas = list(df_ce.columns)
 columnas = [i.lower() for i in columnas]
-df_ice.rename(columns=dict(zip(df_ice.columns[1:], columnas)), inplace=True)
+
+# Renombrar todas las columnas del dataframe con una lista de nombres
+df_ce.rename(columns=dict(zip(df_ce.columns[0:], columnas)), inplace=True)
 
 # resetear index en dataframe resultante porque guarda los indices del dataframe pasado
-df_ice = df_ice.reset_index(drop=True)
+df_ce = df_ce.reset_index(drop=True)
 
 # convertir columna a datetime
-df_ice['DateTime'] = pd.to_datetime(df_ice['DateTime'])
+df_ce['timestamp'] = pd.to_datetime(df_ce['timestamp'])
 
-# -- criterio para rellenar datos faltantes 'nan'
+# criterio para rellenar datos faltantes 'nan'
 # cuando falta en consensus
-nan_consensus = df_ice.index[np.isnan(df_ice['Consensus'])].tolist()
+nan_consensus = df_ce.index[np.isnan(df_ce['consensus'])].tolist()
 
 # asignarle a consensus lo que tiene previous
-df_ice['Consensus'][nan_consensus] = df_ice['Previous'][nan_consensus]
+df_ce['consensus'][nan_consensus] = df_ce['previous'][nan_consensus]
 
-# -- escenarios A, B, C, D, E, F, G, H
-df_ice['escenario'] = ''
+# inicializar la columna escenario, habra los siguientes: A, B, C, D, E, F, G, H
+df_ce['escenario'] = ''
 
-# -- -- A: Actual >= Previous & Actual >= Consensus & Consensus >= Previous
-df_ice['escenario'][((df_ice['Actual'] >= df_ice['Previous']) & (df_ice['Actual'] >= df_ice['Consensus']) &
-                    (df_ice['Consensus'] >= df_ice['Previous']))] = 'A'
+# -- -- A: actual >= previous & actual >= consensus & consensus >= previous
+df_ce['escenario'][((df_ce['actual'] >= df_ce['previous']) & (df_ce['actual'] >= df_ce['consensus']) &
+                    (df_ce['consensus'] >= df_ce['previous']))] = 'A'
 
-# -- -- B: Actual >= Previous & Actual >= Consensus & Consensus < Precious
-df_ice['escenario'][((df_ice['Actual'] >= df_ice['Previous']) & (df_ice['Actual'] >= df_ice['Consensus']) &
-                    (df_ice['Consensus'] < df_ice['Previous']))] = 'B'
+# -- -- B: actual >= previous & actual >= consensus & consensus < Precious
+df_ce['escenario'][((df_ce['actual'] >= df_ce['previous']) & (df_ce['actual'] >= df_ce['consensus']) &
+                    (df_ce['consensus'] < df_ce['previous']))] = 'B'
 
-# -- -- C: Actual >= Previous & Actual < Consensus & Consensus >= Previous
-df_ice['escenario'][((df_ice['Actual'] >= df_ice['Previous']) & (df_ice['Actual'] < df_ice['Consensus']) &
-                    (df_ice['Consensus'] >= df_ice['Previous']))] = 'C'
+# -- -- C: actual >= previous & actual < consensus & consensus >= previous
+df_ce['escenario'][((df_ce['actual'] >= df_ce['previous']) & (df_ce['actual'] < df_ce['consensus']) &
+                    (df_ce['consensus'] >= df_ce['previous']))] = 'C'
 
-# -- -- D: Actual >= Previous & Actual < Consensus & Consensus < Previous
-df_ice['escenario'][((df_ice['Actual'] >= df_ice['Previous']) & (df_ice['Actual'] < df_ice['Consensus']) &
-                    (df_ice['Consensus'] < df_ice['Previous']))] = 'D'
+# -- -- D: actual >= previous & actual < consensus & consensus < previous
+df_ce['escenario'][((df_ce['actual'] >= df_ce['previous']) & (df_ce['actual'] < df_ce['consensus']) &
+                    (df_ce['consensus'] < df_ce['previous']))] = 'D'
 
-# -- -- E: Actual < Previous & Actual >= Consensus & Consensus >= Previous
-df_ice['escenario'][((df_ice['Actual'] < df_ice['Previous']) & (df_ice['Actual'] >= df_ice['Consensus']) &
-                    (df_ice['Consensus'] >= df_ice['Previous']))] = 'E'
+# -- -- E: actual < previous & actual >= consensus & consensus >= previous
+df_ce['escenario'][((df_ce['actual'] < df_ce['previous']) & (df_ce['actual'] >= df_ce['consensus']) &
+                    (df_ce['consensus'] >= df_ce['previous']))] = 'E'
 
-# -- -- F: Actual < Previous & Actual >= Consensus & Consensus < Previous
-df_ice['escenario'][((df_ice['Actual'] < df_ice['Previous']) & (df_ice['Actual'] >= df_ice['Consensus']) &
-                    (df_ice['Consensus'] < df_ice['Previous']))] = 'F'
+# -- -- F: actual < previous & actual >= consensus & consensus < previous
+df_ce['escenario'][((df_ce['actual'] < df_ce['previous']) & (df_ce['actual'] >= df_ce['consensus']) &
+                    (df_ce['consensus'] < df_ce['previous']))] = 'F'
 
-# -- -- G: Actual < Previous & Actual < Consensus & Consensus >= Previous
-df_ice['escenario'][((df_ice['Actual'] < df_ice['Previous']) & (df_ice['Actual'] < df_ice['Consensus']) &
-                    (df_ice['Consensus'] >= df_ice['Previous']))] = 'G'
+# -- -- G: actual < previous & actual < consensus & consensus >= previous
+df_ce['escenario'][((df_ce['actual'] < df_ce['previous']) & (df_ce['actual'] < df_ce['consensus']) &
+                    (df_ce['consensus'] >= df_ce['previous']))] = 'G'
 
-# -- -- H: Actual < Previous & Actual < Consensus & Consensus < Previous
-df_ice['escenario'][((df_ice['Actual'] < df_ice['Previous']) & (df_ice['Actual'] < df_ice['Consensus']) &
-                    (df_ice['Consensus'] < df_ice['Previous']))] = 'H'
-
-# renombrar las columnas
-df_ice = df_ice.rename(columns={'DateTime': 'TimesTamp'})
+# -- -- H: actual < previous & actual < consensus & consensus < previous
+df_ce['escenario'][((df_ce['actual'] < df_ce['previous']) & (df_ce['actual'] < df_ce['consensus']) &
+                    (df_ce['consensus'] < df_ce['previous']))] = 'H'
 
 # -- ------------------------------------------------------------------------------------ Datos: Precios con OANDA -- #
 # -- --------------------------------------------------------------------------------------- --------------------- -- #
@@ -88,7 +85,7 @@ OA_Da = 16                         # Day Align
 OA_Ai = "101-004-2221697-001"      # Id de cuenta
 OA_At = "practice"                 # Tipo de cuenta
 OA_In = "EUR_USD"                  # Instrumento
-OA_Gn = "M5"                        # Granularidad de velas
+OA_Gn = "M5"                       # Granularidad de velas
 FechaIni = "2009-01-06 00:00:00"   # Fecha inicial
 FechaFin = "2019-09-27 00:00:00"   # Fecha final
 
@@ -193,9 +190,18 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
         lista_df.append(pd_hist)
 
     # Concatenar todas las listas
-    final = pd.concat([lista_df[i] for i in range(0, len(lista_df))])
+    df_final = pd.concat([lista_df[i] for i in range(0, len(lista_df))])
 
-    return final
+    columns = list(df_final.columns)
+    columns = [i.lower() for i in columns]
+
+    # Renombrar todas las columnas del dataframe con una lista de nombres
+    df_final.rename(columns=dict(zip(df_final.columns[0:], columns)), inplace=True)
+
+    # resetear index en dataframe resultante porque guarda los indices del dataframe pasado
+    df_final = df_final.reset_index(drop=True)
+
+    return df_final
 
 
 # -- -------------------------------------------------------------------------------- Proceso de descarga completo -- #
@@ -203,13 +209,10 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
 # -- Solo correr esta parte si se quiere descargar todos los precios
 
 # Descagar todos los precios necesarios
-# df_precios = f_precios_masivos(p0_fini=fini, p1_ffin=ffin, p2_gran=OA_Gn, p3_inst=OA_In, p4_oatk=OA_Ak, p5_ginc=5000)
-
-# Resetear index
-# df_precios = df_precios.reset_index(drop=True)
+# df_pe = f_precios_masivos(p0_fini=fini, p1_ffin=ffin, p2_gran=OA_Gn, p3_inst=OA_In, p4_oatk=OA_Ak, p5_ginc=5000)
 
 # Escribir dataframe en un archivo csv
-# df_precios.to_csv(r"archivos/precios_historicos.csv")
+# df_pe.to_csv(r"archivos/precios_historicos.csv", index=False)
 
 # Leer archivo de precios historicos
-df_precios = pd.read_csv("archivos/precios_historicos.csv")
+df_pe = pd.read_csv("archivos/precios_historicos.csv")

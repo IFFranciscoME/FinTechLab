@@ -1,4 +1,4 @@
-DateTime,Currency,Name,Country,Volatility,Actual,Previous,Consensus
+timestamp,Currency,Name,Country,Volatility,actual,previous,consensus
 01/05/2009 09:30:00,EUR,Sentix Investor Confidence,European Monetary Union,1,-34.4,-42.3,
 01/05/2009 15:00:00,USD,Construction Spending (MoM),United States,1,-1.2,-0.4,-1.3
 01/06/2009 08:55:00,EUR,Markit Services PMI,Germany,1,46.6,46.4,46.4
