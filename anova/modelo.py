@@ -3,15 +3,18 @@
 # -- Proyecto: Aplicacion de ANOVA para finanzas bursatiles
 # -- Codigo: modelo.py
 # -- Autor: Francisco ME
+# -- Repositorio:
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
-import pandas as pd
-import numpy as np
-import statsmodels.api as sm
+import pandas as pd                                       # dataframes y utilidades
+import numpy as np                                        # operaciones matematicas
+import statsmodels.api as sm                              # modelos estadisticos: anova
+import funciones as fn                                    # importar funciones desde otro script
+import visualizaciones as vs                              # importar visualizaciones desde otro script
 
-from statsmodels.stats.multicomp import MultiComparison
-from statsmodels.formula.api import ols
-from datos import df_ce, df_pe
+from statsmodels.stats.multicomp import MultiComparison   # herramientas estadisticas: multicomparacion
+from statsmodels.formula.api import ols                   # herramientas estadisticas: modelo lineal con ols
+from datos import df_ce, df_pe                            # importar datos internamente de otro script
 
 pd.set_option('display.max_rows', None)                   # sin limite de renglones maximos para mostrar pandas
 pd.set_option('display.max_columns', None)                # sin limite de columnas maximas para mostrar pandas
@@ -25,54 +28,30 @@ pd.options.mode.chained_assignment = None                 # para evitar el warni
 df_data_pe = df_pe
 df_data_ce = df_ce
 
+# cantidad de precios a futuro a considerar
+psiguiente = 7
+
 # convertir a datetime columna de fechas
 df_data_pe['timestamp'] = pd.to_datetime(df_data_pe['timestamp'])
 
 # escenarios para clasificar los eventos
 escenarios = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
-
-# -- ---------------------------------------------------------------------------------------- definir metrica base -- #
-# -- ---------------------------------------------------------------------------------------- -------------------- -- #
-
-# se define como tiempo inicial como aquel en el que se comunico el indicador
-# proposito del ejercicio: probar si estadisticamente existe diferencia significativa en la media de las
-# reacciones del precio ante 8 diferentes escenarios de salida de un indicador economico
-
-# whether there is a statistically significant difference in mean systolic blood pressures among the four groups
-# h0 = todas las 'reacciones' del precio, ante la comunicacion de un mismo indicador economico, son iguales.
-
-def f_reaccion(p0_i, p1_ad):
-    """
-    :param p0_i: indexador
-    :param p1_ad: cantidad de precios hacia adelante que se considera la ventana
-
-    :return: resultado: diccionario con resultado final con 3 elementos como resultado
-
-    # debugging
-    p0_i = 1
-    p0_ad = 3
-    """
-
-    indice_1 = np.where(df_pe['timestamp'] == df_ce['timestamp'][p0_i])[0][0]
-    indice_2 = indice_1 + p1_ad
-    ho = round((max(df_pe['high'][indice_1:indice_2]) - df_pe['open'][indice_1])*10000, 2)
-    ol = round((df_pe['open'][indice_1] - min(df_pe['low'][indice_1:indice_2]))*10000, 2)
-    hl = round((max(df_pe['high'][indice_1:indice_2]) - min(df_pe['low'][indice_1:indice_2]))*10000, 2)
-
-    # diccionario con resultado final
-    resultado = {'ho': ho, 'ol': ol, 'hl': hl}
-
-    return resultado
-
-
 # reaccion del precio para cada escenario
-d_reaccion = [f_reaccion(p0_i=i, p1_ad=3) for i in range(0, len(df_ce['timestamp']))]
+d_reaccion = [fn.f_reaccion(p0_i=i, p1_ad=psiguiente, p2_pe=df_data_pe, p3_ce=df_data_ce)
+              for i in range(0, len(df_ce['timestamp']))]
 
 # acomodar resultados en columnas
 df_data_ce['ho'] = [d_reaccion[j]['ho'] for j in range(0, len(df_data_ce['timestamp']))]
 df_data_ce['ol'] = [d_reaccion[j]['ol'] for j in range(0, len(df_data_ce['timestamp']))]
 df_data_ce['hl'] = [d_reaccion[j]['hl'] for j in range(0, len(df_data_ce['timestamp']))]
+
+# visualizar ejemplo de venta de precio
+indice_1 = np.where(df_data_pe['timestamp'] == df_data_ce['timestamp'][6])[0][0]
+indice_2 = indice_1 + psiguiente
+df_data_g1 = df_data_pe[indice_1:indice_2].reset_index(drop=True)
+grafica1 = vs.g_velasdd(p0_de=df_data_g1)
+grafica1.show()
 
 # Escenarios que si ocurrieron
 esc_reales = list(set(df_data_ce['escenario']))
