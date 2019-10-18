@@ -3,7 +3,7 @@
 # -- Proyecto: Aplicacion de ANOVA para finanzas bursatiles
 # -- Codigo: modelo.py
 # -- Autor: Francisco ME
-# -- Repositorio:
+# -- Repositorio: https://github.com/IFFranciscoME/FinTechLab/blob/master/anova/modelo.py
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
 import pandas as pd                                       # dataframes y utilidades
@@ -45,8 +45,20 @@ df_data_ce['ho'] = [d_reaccion[j]['ho'] for j in range(0, len(df_data_ce['timest
 df_data_ce['ol'] = [d_reaccion[j]['ol'] for j in range(0, len(df_data_ce['timestamp']))]
 df_data_ce['hl'] = [d_reaccion[j]['hl'] for j in range(0, len(df_data_ce['timestamp']))]
 
+# elegir a los que tengan > 20
+elegidos = [escenarios[i] if len(df_data_ce[df_ce['escenario'] == escenarios[i]]) >= 20 else 'nan'
+            for i in range(0, len(escenarios))]
+l_elegidos = [x for x in elegidos if str(x) != 'nan']
+
+# tomar las 20 ocurrencias mas recientes de los que hayan quedado
+df_data_ce_c = pd.concat([df_data_ce[df_data_ce['escenario'] == l_elegidos[i]].sort_values(by='timestamp').tail(20)
+                          for i in range(0, len(l_elegidos))]).reset_index(drop=True)
+
+# comprobar que se tienen los escenarios con las 20 muestras mas recientes
+ocurrencias = dict(df_data_ce_c['escenario'].value_counts())
+
 # visualizar ejemplo de venta de precio
-indice_1 = np.where(df_data_pe['timestamp'] == df_data_ce['timestamp'][6])[0][0]
+indice_1 = np.where(df_data_pe['timestamp'] == df_data_ce_c['timestamp'][3])[0][0]
 indice_2 = indice_1 + psiguiente
 df_data_g1 = df_data_pe[indice_1:indice_2].reset_index(drop=True)
 grafica1 = vs.g_velasdd(p0_de=df_data_g1)
@@ -55,17 +67,17 @@ grafica1.show()
 # Escenarios que si ocurrieron
 esc_reales = list(set(df_data_ce['escenario']))
 
-# Elegir a escenarios con mayor similitud entre muestras
-ocurrencias = dict(df_data_ce['escenario'].value_counts())
+# crear cuadro de datos para modelo ANOVA
+df_data_anova = df_data_ce_c[['escenario', 'hl', 'ol', 'ho']]
 
 # ajustar modelo lineal
-model = ols('ol ~ escenario', data=df_data_ce).fit()
+model = ols('hl ~ escenario', data=df_data_anova).fit()
 
 # tabla anova
 anova_table = sm.stats.anova_lm(model, typ=2)
 print(anova_table)
 
 # comparacion con tukey
-mc = MultiComparison(df_data_ce['hl'], df_data_ce['escenario'])
+mc = MultiComparison(df_data_anova['hl'], df_data_anova['escenario'])
 mc_results = mc.tukeyhsd()
 print(mc_results)

@@ -3,7 +3,7 @@
 # -- Proyecto: Aplicacion de ANOVA para finanzas bursatiles
 # -- Codigo: datos.py
 # -- Autor: Francisco ME
-# -- Repositorio:
+# -- Repositorio: https://github.com/IFFranciscoME/FinTechLab/blob/master/anova/datos.py
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
 import pandas as pd                                       # dataframes y utilidades
@@ -33,6 +33,9 @@ df_ce = df_ce.reset_index(drop=True)
 # convertir columna a datetime
 df_ce['timestamp'] = pd.to_datetime(df_ce['timestamp'])
 
+# escenarios para clasificar los eventos
+escenarios = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+
 # criterio para rellenar datos faltantes 'nan'
 # cuando falta en consensus
 nan_consensus = df_ce.index[np.isnan(df_ce['consensus'])].tolist()
@@ -43,17 +46,37 @@ df_ce['consensus'][nan_consensus] = df_ce['previous'][nan_consensus]
 # inicializar la columna escenario, habra los siguientes: A, B, C, D, E, F, G, H
 df_ce['escenario'] = ''
 
-# -- -- A: actual >= previous & actual >= consensus
-df_ce['escenario'][((df_ce['actual'] >= df_ce['previous']) & (df_ce['actual'] >= df_ce['consensus']))] = 'A'
+# -- -- A: actual >= previous & actual >= consensus & consensus >= previous
+df_ce['escenario'][((df_ce['actual'] >= df_ce['previous']) & (df_ce['actual'] >= df_ce['consensus']) &
+                    (df_ce['consensus'] >= df_ce['previous']))] = 'A'
 
-# -- -- B: actual >= previous & actual < consensus
-df_ce['escenario'][((df_ce['actual'] >= df_ce['previous']) & (df_ce['actual'] < df_ce['consensus']))] = 'B'
+# -- -- B: actual >= previous & actual >= consensus & consensus < Precious
+df_ce['escenario'][((df_ce['actual'] >= df_ce['previous']) & (df_ce['actual'] >= df_ce['consensus']) &
+                    (df_ce['consensus'] < df_ce['previous']))] = 'B'
 
-# -- -- C: actual < previous & actual >= consensus
-df_ce['escenario'][((df_ce['actual'] < df_ce['previous']) & (df_ce['actual'] >= df_ce['consensus']))] = 'C'
+# -- -- C: actual >= previous & actual < consensus & consensus >= previous
+df_ce['escenario'][((df_ce['actual'] >= df_ce['previous']) & (df_ce['actual'] < df_ce['consensus']) &
+                    (df_ce['consensus'] >= df_ce['previous']))] = 'C'
 
-# -- -- D: actual < previous & actual < consensus
-df_ce['escenario'][((df_ce['actual'] < df_ce['previous']) & (df_ce['actual'] < df_ce['consensus']))] = 'D'
+# -- -- D: actual >= previous & actual < consensus & consensus < previous
+df_ce['escenario'][((df_ce['actual'] >= df_ce['previous']) & (df_ce['actual'] < df_ce['consensus']) &
+                    (df_ce['consensus'] < df_ce['previous']))] = 'D'
+
+# -- -- E: actual < previous & actual >= consensus & consensus >= previous
+df_ce['escenario'][((df_ce['actual'] < df_ce['previous']) & (df_ce['actual'] >= df_ce['consensus']) &
+                    (df_ce['consensus'] >= df_ce['previous']))] = 'E'
+
+# -- -- F: actual < previous & actual >= consensus & consensus < previous
+df_ce['escenario'][((df_ce['actual'] < df_ce['previous']) & (df_ce['actual'] >= df_ce['consensus']) &
+                    (df_ce['consensus'] < df_ce['previous']))] = 'F'
+
+# -- -- G: actual < previous & actual < consensus & consensus >= previous
+df_ce['escenario'][((df_ce['actual'] < df_ce['previous']) & (df_ce['actual'] < df_ce['consensus']) &
+                    (df_ce['consensus'] >= df_ce['previous']))] = 'G'
+
+# -- -- H: actual < previous & actual < consensus & consensus < previous
+df_ce['escenario'][((df_ce['actual'] < df_ce['previous']) & (df_ce['actual'] < df_ce['consensus']) &
+                    (df_ce['consensus'] < df_ce['previous']))] = 'H'
 
 # -- ------------------------------------------------------------------------------------ Datos: Precios con OANDA -- #
 

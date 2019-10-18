@@ -3,7 +3,7 @@
 # -- Proyecto: Aplicacion de ANOVA para finanzas bursatiles
 # -- Codigo: funciones.py
 # -- Autor: Francisco ME
-# -- Repositorio:
+# -- Repositorio: https://github.com/IFFranciscoME/FinTechLab/blob/master/anova/funciones.py
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
 import numpy as np                                        # operaciones matematicas
