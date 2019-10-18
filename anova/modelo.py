@@ -23,7 +23,6 @@ pd.set_option('display.expand_frame_repr', False)         # visualizar todas las
 pd.options.mode.chained_assignment = None                 # para evitar el warning enfadoso de indexacion
 
 # -- ------------------------------------------------------------------------------------ adecuaciones adicionales -- #
-# ambas fechas, tanto del calendario economico como de los precios estan en Huso horario GMT
 # duplicar objetos para conservar los originales
 df_data_pe = df_pe
 df_data_ce = df_ce

@@ -6,8 +6,6 @@
 # -- Repositorio:
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
-# import pandas as pd
-import numpy as np
 import plotly.graph_objs as go
 
 # para elegir el motor de renderizacion por default
