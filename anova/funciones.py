@@ -38,10 +38,9 @@ def f_reaccion(p0_i, p1_ad, p2_pe, p3_ce):
     indice_2 = indice_1 + p1_ad
     ho = round((max(p2_pe['high'][indice_1:indice_2]) - p2_pe['open'][indice_1])*10000, 2)
     ol = round((p2_pe['open'][indice_1] - min(p2_pe['low'][indice_1:indice_2]))*10000, 2)
-    hl = round((max(p2_pe['high'][indice_1:indice_2]) - min(p2_pe['low'][indice_1:indice_2]))*10000, 2)
 
     # diccionario con resultado final
-    resultado = {'ho': ho, 'ol': ol, 'hl': hl}
+    resultado = {'ho': ho, 'ol': ol}
 
     return resultado
 
