@@ -19,7 +19,7 @@ from datos import df_ce, df_pe                            # importar datos inter
 pd.set_option('display.max_rows', None)                   # sin limite de renglones maximos para mostrar pandas
 pd.set_option('display.max_columns', None)                # sin limite de columnas maximas para mostrar pandas
 pd.set_option('display.width', None)                      # sin limite el ancho del display
-pd.set_option('display.expand_frame_repr', False)         # visualizar todas las columnas de un pandas dataframe
+pd.set_option('display.expand_frame_repr', False)         # visualizar todas las columnas de un dataframe
 pd.options.mode.chained_assignment = None                 # para evitar el warning enfadoso de indexacion
 
 # -- ------------------------------------------------------------------------------------ adecuaciones adicionales -- #
@@ -44,9 +44,6 @@ d_reaccion = [fn.f_reaccion(p0_i=i, p1_ad=psiguiente, p2_pe=df_data_pe, p3_ce=df
 df_data_ce['ho'] = [d_reaccion[j]['ho'] for j in range(0, len(df_data_ce['timestamp']))]
 df_data_ce['ol'] = [d_reaccion[j]['ol'] for j in range(0, len(df_data_ce['timestamp']))]
 
-# escenarios que si ocurrieron
-esc_reales = list(set(df_data_ce['escenario']))
-
 # elegir a los que tengan > n
 n = 30
 elegidos = [escenarios[i] if len(df_data_ce[df_ce['escenario'] == escenarios[i]]) >= n else 'nan'
@@ -60,6 +57,7 @@ df_data_ce_c = pd.concat([df_data_ce[df_data_ce['escenario'] == l_elegidos[i]].s
 # comprobar que se tienen los escenarios con las 20 muestras mas recientes
 ocurrencias = dict(df_data_ce_c['escenario'].value_counts())
 
+# -- -------------------------------------------------------------------------------------------- Visualizaciones -- #
 # visualizar ejemplo de venta de precio
 n_ejem = 7
 indice_1 = np.where(df_data_pe['timestamp'] == df_data_ce_c['timestamp'][n_ejem])[0][0]
@@ -68,32 +66,62 @@ df_data_g1 = df_data_pe[indice_1:indice_2].reset_index(drop=True)
 grafica1 = vs.g_velasdd(p0_de=df_data_g1)
 grafica1.show()
 
-# visualizar valores de ol: (open - low)
-grafica3 = vs.g_histograma(p0_val=df_data_ce_c[df_data_ce_c['escenario'] == 'A']['ol'],
-                           p1_nbins=10, p2_color='#047CFB',
-                           p3_etiquetas={'titulo': '<b>Histograma de probabilidad </b>ol: (open - low)',
-                                         'ejex': 'valores en (pips)', 'ejey': 'probabilidad'})
+# colores para distinguir cada histograma
+colores2 = {'serie_1': '#047CFB', 'serie_2': '#42c29b', 'serie_3': '#6B6B6B'}
+
+# etiquetas para titulo y ejes
+etiquetas2 = {'titulo': '<b>Histograma de probabilidad </b>ol: (open - low)',
+              'ejex': 'valores en (pips)', 'ejey': 'probabilidad'}
+
+# acomodar datos para funcion de 3 histogramas
+datos2 = pd.DataFrame({'val_1': df_data_ce_c[df_data_ce_c['escenario'] == 'A']['ol'],
+                       'val_2': df_data_ce_c[df_data_ce_c['escenario'] == 'B']['ol'],
+                       'val_3': df_data_ce_c[df_data_ce_c['escenario'] == 'H']['ol']})
+
+# grafica de 3 histogramas
+grafica2 = vs.g_hist_varios(p0_val=datos2, p1_colores=colores2, p2_etiquetas=etiquetas2)
+grafica2.show()
+
+# colores para distinguir cada histograma
+colores3 = {'serie_1': '#047CFB', 'serie_2': '#42c29b', 'serie_3': '#6B6B6B'}
+
+# etiquetas para titulo y ejes
+etiquetas3 = {'titulo': '<b>Histograma de probabilidad </b>ho: (high - open)',
+              'ejex': 'valores en (pips)', 'ejey': 'probabilidad'}
+
+# acomodar datos para funcion de 3 histogramas
+datos3 = pd.DataFrame({'val_1': df_data_ce_c[df_data_ce_c['escenario'] == 'A']['ho'],
+                       'val_2': df_data_ce_c[df_data_ce_c['escenario'] == 'B']['ho'],
+                       'val_3': df_data_ce_c[df_data_ce_c['escenario'] == 'H']['ho']})
+
+# grafica de 3 histogramas
+grafica3 = vs.g_hist_varios(p0_val=datos3, p1_colores=colores3, p2_etiquetas=etiquetas3)
 grafica3.show()
 
-# visualizar valores de ho: (high - open)
-grafica4 = vs.g_histograma(p0_val=df_data_ce_c[df_data_ce_c['escenario'] == 'A']['ho'],
-                           p1_nbins=10, p2_color='#047CFB',
-                           p3_etiquetas={'titulo': '<b>Histograma de probabilidad </b>ho: (high - open)',
-                                         'ejex': 'valores en (pips)', 'ejey': 'probabilidad'})
-grafica4.show()
-
+# -- ------------------------------------------------------------------------------------------------ Modelo ANOVA -- #
 # crear cuadro de datos para modelo ANOVA
 df_data_anova = df_data_ce_c[['escenario', 'ol', 'ho']]
 
-# ajustar modelo lineal
-model = ols('ho ~ C(escenario)', data=df_data_anova).fit()
-model.summary()
+# ajustar modelo lineal para (high - open)
+model_ho = ols('ho ~ C(escenario)', data=df_data_anova).fit()
+model_ho.summary()
 
-# tabla anova
-anova_table = sm.stats.anova_lm(model, typ=2)
-print(anova_table)
+# ajustar modelo lineal para (open - low)
+model_ol = ols('ol ~ C(escenario)', data=df_data_anova).fit()
+model_ol.summary()
+
+# tabla anova (high - open)
+anova_table_ho = sm.stats.anova_lm(model_ho, typ=2)
+
+# tabla anova (open - low)
+anova_table_ol = sm.stats.anova_lm(model_ol, typ=2)
 
 # comparacion con tukey
-mc = MultiComparison(df_data_anova['hl'], df_data_anova['escenario'])
+mc = MultiComparison(df_data_anova['ho'], df_data_anova['escenario'])
+mc_results = mc.tukeyhsd()
+print(mc_results)
+
+# comparacion con tukey
+mc = MultiComparison(df_data_anova['ol'], df_data_anova['escenario'])
 mc_results = mc.tukeyhsd()
 print(mc_results)
