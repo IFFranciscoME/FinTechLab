@@ -86,7 +86,7 @@ OA_At = "practice"                 # Tipo de cuenta
 OA_In = "EUR_USD"                  # Instrumento
 OA_Gn = "M5"                       # Granularidad de velas
 FechaIni = "2009-01-06 00:00:00"   # Fecha inicial
-FechaFin = "2019-09-27 00:00:00"   # Fecha final
+FechaFin = "2019-11-01 00:00:00"   # Fecha final
 
 # cohercionar las fechas a huso horario GMT
 fini = pd.to_datetime(FechaIni).tz_localize('GMT')
@@ -96,7 +96,7 @@ ffin = pd.to_datetime(FechaFin).tz_localize('GMT')
 OA_Ak = '7' + '9ae0a52f8e483facdd81f5b316a8ef8-99fb5554f4739c76535b209044f7de2' + '6'
 
 # Leer archivo de precios historicos
-df_pe = pd.read_csv("archivos/precios_historicos.csv")
+df_pe = pd.read_csv("archivos/precios_historicos_eurusd.csv")
 
 # -- -------------------------------------------------------------------------------- Proceso de descarga completo -- #
 # -- -------------------------------------------------------------------------------- ---------------------------- -- #
@@ -106,4 +106,4 @@ df_pe = pd.read_csv("archivos/precios_historicos.csv")
 # df_pe = fn.f_precios_masivos(p0_fini=fini, p1_ffin=ffin, p2_gran=OA_Gn, p3_inst=OA_In, p4_oatk=OA_Ak, p5_ginc=5000)
 
 # Escribir dataframe en un archivo csv
-# df_pe.to_csv(r"archivos/precios_historicos.csv", index=False)
+# df_pe.to_csv(r"archivos/precios_historicos_19.csv", index=False)

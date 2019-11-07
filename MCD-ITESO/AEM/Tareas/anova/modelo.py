@@ -30,8 +30,13 @@ df_data_ce = df_ce
 # cantidad de precios a futuro a considerar
 psiguiente = 7
 
-# convertir a datetime columna de fechas
+# convertir a datetime columna de fechas a los datos de precios
 df_data_pe['timestamp'] = pd.to_datetime(df_data_pe['timestamp'])
+df_data_pe['timestamp'] = df_data_pe['timestamp'].dt.tz_localize('UTC')
+
+# convertir a datetime columna de fechas a los datos del calendario economico
+df_data_ce['timestamp'] = pd.to_datetime(df_data_ce['timestamp'])
+df_data_ce['timestamp'] = df_data_ce['timestamp'].dt.tz_localize('UTC')
 
 # escenarios para clasificar los eventos
 escenarios = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
