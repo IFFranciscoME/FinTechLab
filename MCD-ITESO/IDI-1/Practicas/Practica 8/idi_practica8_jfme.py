@@ -1,81 +1,3 @@
-# def minimax(self, profundidad, ismax):
-#     """
-#     :param profundidad: nivel de profundidad a buscar: int
-#     :param ismax: nodo de movimiento de jugador (True=maximizador, False=minimizador): [True, False]
-#     :return: self.data: int
-#     """
-#
-#     print('entrada con profundidad: ' + str(profundidad))
-#     # Si ya se alcanzo la profundidad desdeada, regresar dato de nodo
-#     if profundidad == 0:
-#         print('profundidad == 0')
-#         return self.data
-#
-#     # Nodo de jugador maximizador
-#     if ismax:
-#         print('ismax == True')
-#         # El -"infinito" programatico como un numero muy pequeño
-#         maxeval = -float('inf')
-#         # Si tiene nodo hijo izquierdo
-#         if self.left:
-#             print('ismax = True & self.left == True - entra desde: ' + str(self.data) +
-#                   ' - profundidad = ' + str(profundidad - 1))
-#             mmeval = self.left.minimax(profundidad=profundidad - 1, ismax=False)
-#             maxeval = max(maxeval, mmeval)
-#             return maxeval
-#         # Si tiene hijo derecho
-#         elif self.right:
-#             print('ismax = True & self.right == True - entra con: ' + str(self.data) +
-#                   ' - profundidad = ' + str(profundidad - 1))
-#             mmeval = self.right.minimax(profundidad=profundidad - 1, ismax=False)
-#             maxeval = max(maxeval, mmeval)
-#             return maxeval
-#         else:
-#             return self.data
-#
-#     # Nodo de jugador minimizador
-#     else:
-#         print('ismax == False')
-#         # El +"infinito" programatico como un numero muy grande
-#         mineval = +float('inf')
-#         # Si tiene hijo izquierdo
-#         if self.left:
-#             print('ismax = False & self.left == True - entra desde: ' + str(self.data) +
-#                   ' - profundidad = ' + str(profundidad - 1))
-#             mmeval = self.left.minimax(profundidad=profundidad - 1, ismax=True)
-#             print('calcular el min')
-#             mineval = min(mineval, mmeval)
-#             return mineval
-#         # Si tiene hijo derecho
-#         elif self.right:
-#             print('ismax = False & self.right == True - entra con: ' + str(self.data) +
-#                   ' - profundidad = ' + str(profundidad - 1))
-#             mmeval = self.right.minimax(profundidad=profundidad - 1, ismax=True)
-#             mineval = min(mineval, mmeval)
-#             return mineval
-
-# function minimax(position, depth, maximizingPlayer)
-# 	if depth == 0 or game over in position
-# 		return static evaluation of position
-#
-# 	if maximizingPlayer
-# 		maxEval = -infinity
-# 		for each child of position
-# 			eval = minimax(child, depth - 1, false)
-# 			maxEval = max(maxEval, eval)
-# 		return maxEval
-#
-# 	else
-# 		minEval = +infinity
-# 		for each child of position
-# 			eval = minimax(child, depth - 1, true)
-# 			minEval = min(minEval, eval)
-# 		return minEval
-#
-#
-# initial call
-# minimax(currentPosition, 3, true)
-
 
 class Nodo:
     # Constructor de la funcion
@@ -135,22 +57,19 @@ class Nodo:
             maxeval = -float('inf')
             # Si tiene nodo hijo izquierdo
             if self.left:
-                print('izquierdo: ismax = True & self.left == True - entra desde: ' + str(self.data) +
+                print('ismax = True & self.left == True - entra desde: ' + str(self.data) +
                       ' - profundidad = ' + str(profundidad - 1))
-                mmeval = self.left.minimax(profundidad=profundidad-1, ismax=False)
-                print('calcular el max entre: ' + str(maxeval) + ' y ' + str(mmeval))
+                mmeval = self.left.minimax(profundidad=profundidad - 1, ismax=False)
                 maxeval = max(maxeval, mmeval)
                 return maxeval
             # Si tiene hijo derecho
             elif self.right:
-                print('derecho: ismax = True & self.right == True - entra con: ' + str(self.data) +
+                print('ismax = True & self.right == True - entra con: ' + str(self.data) +
                       ' - profundidad = ' + str(profundidad - 1))
-                mmeval = self.right.minimax(profundidad=profundidad-1, ismax=False)
-                print('calcular el max entre: ' + str(maxeval) + ' y ' + str(mmeval))
+                mmeval = self.right.minimax(profundidad=profundidad - 1, ismax=False)
                 maxeval = max(maxeval, mmeval)
                 return maxeval
             else:
-                print('no hay hijos')
                 return self.data
 
         # Nodo de jugador minimizador
@@ -160,18 +79,17 @@ class Nodo:
             mineval = +float('inf')
             # Si tiene hijo izquierdo
             if self.left:
-                print('izquierdo: ismax = False & self.left == True - entra desde: ' + str(self.data) +
+                print('ismax = False & self.left == True - entra desde: ' + str(self.data) +
                       ' - profundidad = ' + str(profundidad - 1))
-                mmeval = self.left.minimax(profundidad=profundidad-1, ismax=True)
-                print('calcular el min entre: ' + str(mineval) + ' y ' + str(mmeval))
+                mmeval = self.left.minimax(profundidad=profundidad - 1, ismax=True)
+                print('calcular el min')
                 mineval = min(mineval, mmeval)
                 return mineval
             # Si tiene hijo derecho
             elif self.right:
-                print('derecho: ismax = False & self.right == True - entra con: ' + str(self.data) +
+                print('ismax = False & self.right == True - entra con: ' + str(self.data) +
                       ' - profundidad = ' + str(profundidad - 1))
-                mmeval = self.right.minimax(profundidad=profundidad-1, ismax=True)
-                print('calcular el min entre: ' + str(mineval) + ' y ' + str(mmeval))
+                mmeval = self.right.minimax(profundidad=profundidad - 1, ismax=True)
                 mineval = min(mineval, mmeval)
                 return mineval
 
@@ -194,5 +112,4 @@ arbol.insertar(dato=34, lado='right', ismax=True)
 #                     /      \             /    \
 # prof = 2         |31|      |33|       |34|    |32|
 
-
-arbol.minimax(profundidad=3, ismax=True)
+arbol.minimax(profundidad=2, ismax=True)
