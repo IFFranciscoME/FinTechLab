@@ -6,17 +6,24 @@
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
 import numpy as np
+import time
 
 
 # -- ------------------------------------------------------------------------- Funcion Global : Entrada de usuario -- #
 # ------------------------------------------------------------------------------------------------------------------- #
 
+def jugar():
+    input_usuario()
+
+
 def input_usuario():
 
-    print("------------------------------------------------------------- ")
-    print("------------ ¿Qué movimiento quieres hacer? ----------------- ")
-    print("------------------------------------------------------------- ")
-    in_mov = int(input("'1 => arriba', '2 => derecha', '3 => abajo', '4 => izquierda' "))
+    print("---------- ¿Qué movimiento quieres hacer? --------------- ")
+    print("---------- ------------------------------ --------------- ")
+    print("  1 = arriba, 2 = derecha, 3 = abajo, 4 = izquierda       ")
+    print("---------- ------------------------------ --------------- ")
+    in_mov = int(input("Movimiento: "))
+
     if in_mov == 1:
         return 'arriba'
     elif in_mov == 2:
@@ -27,9 +34,7 @@ def input_usuario():
         return 'izquierda'
     else:
         print(" \n ")
-        print("************************************************************* ")
-        print("******** Movimiento no valido, intenta de nuevo ************* ")
-        print("************************************************************* ")
+        print("** Movimiento no valido, intenta de nuevo ** ")
         print(" \n ")
 
         return input_usuario()
@@ -38,10 +43,31 @@ def input_usuario():
 # -- ---------------------------------------------------------------------------------------------- Clase: Tablero -- #
 # ------------------------------------------------------------------------------------------------------------------- #
 
+class Jugador(object):
+    def __init__(self, jug_posicion, jug_iscpu):
+        """
+        :param jug_posicion: list : [1, 2] : posicion en el tablero del jugador
+        :param jug_iscpu: bool : True/False : bandera si el jugador es cpu (si no es cpu es humano)
+        """
+        # Inicializar la posicion en el tablero del jugador
+        self.jug_posicion = jug_posicion
+        # Inicializar la bandera sobre si el jugador es el CPU
+        self.jug_iscpu = jug_iscpu
+        # Inicializar el nombre del jugador
+        self.jug_nombre = None
+        #  Inicializar el simbolo en el tablero del jugador
+        self.jug_simbolo = None
+
+
+# -- ---------------------------------------------------------------------------------------------- Clase: Tablero -- #
+# ------------------------------------------------------------------------------------------------------------------- #
+
 class Tablero(object):
 
     # Inicializar el tablero
-    def __init__(self, tab_size, tab_min, tab_max, tab_dif, tab_player):
+    def __init__(self, tab_score, tab_size, tab_min, tab_max, tab_dif, tab_player):
+        # El score del tablero
+        self.tab_score = tab_score
         # El tamaño del tablero [8, 8]
         self.tab_size = tab_size
         # Valor minimo para simular los aleatorios
@@ -56,12 +82,23 @@ class Tablero(object):
         self.tab_celdas = [[Celda(cel_valor=np.random.randint(tab_min, tab_max), cel_posicion=(i, j))
                             for j in range(tab_size)] for i in range(tab_size)]
 
+        # inicializar en celda (0, 0) a CPU
+        # print('celda cpu')
+        # print(self.tab_celdas[0][0])
+        # inicializar en celda (N, N) a Persona
+        # print('celda jugador')
+        # print(self.tab_celdas.cel_posicion[self.tab_size, self.tab_size])
+
     def __str__(self):
         res = ""
+        # Filas
         for i in range(len(self.tab_celdas)):
+            # Columnas
+            res += '|'
             for j in range(len(self.tab_celdas)):
-                res += f'|__{self.tab_celdas[i][j]}__'
-            res += '|\n'
+                res += f'{self.tab_celdas[i][j]}|'
+            res += '\n'
+
         return res
 
 
@@ -70,15 +107,26 @@ class Tablero(object):
 
 class Celda(object):
     def __init__(self, cel_valor, cel_posicion):
+        """
+        :param cel_valor:
+        :param cel_posicion:
+        """
         # Valor dentro de la celda
         self.cel_valor = cel_valor
         # Ubicacion en el tablero de la celda
         self.cel_posicion = cel_posicion
         # Para identificar si la celda fue visitada (independiente de quien la visito)
         self.cel_visitada = False
-        # Para identificar el jugador que visito la celda
-        self.cel_visitante = None
+        # Para identificar el jugador que visito la celda (True == cpu, False == jugador)
+        self.cel_visitante = True
+        # Para usar simbolo segun jugador en la impresion del tablero
+        self.cel_simbolo = '*' if self.cel_visitante else ' '
 
+    def __str__(self):
+        if len(str(self.cel_valor)) % 2 == 0:
+            return f'{self.cel_simbolo} {self.cel_valor} {self.cel_simbolo}'
+        else:
+            return f'{self.cel_simbolo} 0{self.cel_valor} {self.cel_simbolo}'
 
 # Validar
 # input_usuario()
@@ -92,33 +140,61 @@ class Celda(object):
 # mover jugador actualizando tablero
 # mostrar tablero actualizado
 
+
 # -- ------------------------------------------------------------------------------------------------ Seccion Main -- #
 # ------------------------------------------------------------------------------------------------------------------- #
 
 if __name__ == '__main__':
+
     # Mensaje de bienvenida
-    print('\nSkynet: ¿Estás listo? \n')
+    print('\n \nSkynet: ¿Estás listo? \n')
+    input("Press Enter to continue...\n")
+    time.sleep(0.5)
+
     # solicitar Dificultad
     in_dif = int(input("Elige dificultad | 3 => 'facil', '5 => 'dificil: "))
+    # in_dif = 3
 
     # solicitar min para aleatorios
     in_min = int(input("Ingresa el numero mínimo para aleatorios (entero > 0): "))
+    # in_min = 10
 
     # solicitar max para aleatorios
     in_max = int(input("Ingresa el numero máximo para aleatorios (entero > 0): "))
+    # in_max = 20
 
     # solicitar tamaño de matriz
     in_mat = int(input("Ingresa el valor de N para la matriz N x N (entero > 2): "))
+    # in_mat = 8
 
     # solicitar nombre de jugador
     in_nom = str(input("Ingresa el nombre del jugador: "))
+    # in_nom = 'john connor'
+    # yeah
+
+    # print('\n john connor: \r', ' buen intento ... \r')
+    loading = 'John Connor'
+    time.sleep(2)
+    print('\nBuen intento ...\n')
+    time.sleep(2)
+    for i in range(11):
+        print(loading[i], sep='', end=' ', flush=True)
+        time.sleep(0.25)
+    time.sleep(3)
 
     # imprimir mensaje de inicio
-    print("\n ... Inicializando Juego ... \n")
+    print("\n \n ................ Dia del Juicio Final ................ \n")
+    time.sleep(2)
 
     # Inicializar tablero
-    juego_tablero = Tablero(tab_min=1, tab_max=15, tab_size=8, tab_player=in_nom, tab_dif=in_dif)
+    juego_tablero = Tablero(tab_min=in_min, tab_max=in_max, tab_size=in_mat,
+                            tab_player=in_nom, tab_dif=in_dif, tab_score=0)
 
     # Imprimir tablero
     print(juego_tablero)
+    print('Skynet: *')
+    print('Connor, john: o \n \n')
+    time.sleep(1.5)
 
+    # Funcion jugar
+    jugar()
