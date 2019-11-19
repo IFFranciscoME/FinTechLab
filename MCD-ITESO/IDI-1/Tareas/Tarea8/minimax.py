@@ -67,10 +67,16 @@ class Jugador(object):
         self.jug_posicion = jug_posicion
         # Inicializar la bandera sobre si el jugador es el CPU
         self.jug_iscpu = jug_iscpu
+        # Inicializar si el jugador es max
+        self.jug_ismax = None
         # Inicializar el nombre del jugador
         self.jug_nombre = None
-        #  Inicializar el simbolo en el tablero del jugador
+        # Inicializar el simbolo en el tablero del jugador
         self.jug_simbolo = None
+        # Inicializar celdas que ha visitado el jugador
+        self.jug_celdasvis = None
+        # Inicializar puntos que lleva el jugador
+        self.jug_puntos = None
 
 
 # -- ---------------------------------------------------------------------------------------------- Clase: Tablero -- #
