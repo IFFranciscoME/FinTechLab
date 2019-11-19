@@ -34,18 +34,19 @@ plt.xlabel('PCA 1')
 plt.ylabel('PCA 2')
 plt.show()
 
-#Escalar los datos
-#escala=MinMaxScaler()
-#escala.fit(cancer.data)
-#escalada=escala.transform(cancer.data)
-#pca.fit(escalada)
-#transformada=pca.transform(escalada)
-#mglearn.discrete_scatter(transformada[:,0],transformada[:,1], cancer.target)
-#plt.legend(cancer.target_names,loc='best')
-#plt.gca()
-#plt.xlabel('PCA 1')
-#plt.ylabel('PCA 2')
-#plt.show()
+# Escalar los datos
+escala=MinMaxScaler()
+escala.fit(cancer.data)
+escalada=escala.transform(cancer.data)
+pca.fit(escalada)
+transformada=pca.transform(escalada)
+mglearn.discrete_scatter(transformada[:,0],transformada[:, 1],  cancer.target)
+plt.legend(cancer.target_names, loc='best')
+plt.gca()
+plt.xlabel('PCA 1')
+plt.ylabel('PCA 2')
+plt.show()
+
 #%% Comprobar hasta cuantas dimensiones es posible reducir
 import numpy as np
 w,v = np.linalg.eig(pca.get_covariance()) # Calcular los vectores y valores propios de la martiz de covarianza
