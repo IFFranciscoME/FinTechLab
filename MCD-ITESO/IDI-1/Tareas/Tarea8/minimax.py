@@ -6,14 +6,28 @@
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
 import numpy as np
-import time
+# import time
 
 
 # -- ------------------------------------------------------------------------- Funcion Global : Entrada de usuario -- #
 # ------------------------------------------------------------------------------------------------------------------- #
 
 def jugar():
-    input_usuario()
+    # While con bandera de si el juego termino
+
+    # Solicitar movimiento a jugador
+    movimiento = input_usuario()
+    # Verificar que sea movimiento valido
+
+    # Actualizar celda destino con movimiento de jugador
+    # Calcular Score de tablero
+    # Desplegar score en el tablero
+    # Mostrar mensaje que cpu esta moviendo
+    # Calcular movimiento a cpu
+    # Actualizar celda destino con movimiento de cpu
+    # Calcular score de tablero
+
+    # Repetir proceso mientras no haya un Break en el while
 
 
 def input_usuario():
@@ -83,14 +97,10 @@ class Tablero(object):
                             for j in range(tab_size)] for i in range(tab_size)]
 
         # inicializar en celda (0, 0) a CPU
-        # print('celda cpu')
-        # print(self.tab_celdas[0][0])
         # inicializar en celda (N, N) a Persona
-        # print('celda jugador')
-        # print(self.tab_celdas.cel_posicion[self.tab_size, self.tab_size])
 
     def __str__(self):
-        res = ""
+        res = "\n"
         # Filas
         for i in range(len(self.tab_celdas)):
             # Columnas
@@ -98,7 +108,6 @@ class Tablero(object):
             for j in range(len(self.tab_celdas)):
                 res += f'{self.tab_celdas[i][j]}|'
             res += '\n'
-
         return res
 
 
@@ -146,55 +155,59 @@ class Celda(object):
 
 if __name__ == '__main__':
 
+    # -- -------------------------------------------------------------------------------- Inicializacion del juego -- #
     # Mensaje de bienvenida
-    print('\n \nSkynet: ¿Estás listo? \n')
-    input("Press Enter to continue...\n")
-    time.sleep(0.5)
+    # print('\n \nSkynet: ¿Estás listo? \n')
+    # input("Press Enter to continue...\n")
+    # time.sleep(0.5)
 
     # solicitar Dificultad
-    in_dif = int(input("Elige dificultad | 3 => 'facil', '5 => 'dificil: "))
-    # in_dif = 3
+    # in_dif = int(input("Elige dificultad | 3 => 'facil', '5 => 'dificil: "))
+    in_dif = 3
 
     # solicitar min para aleatorios
-    in_min = int(input("Ingresa el numero mínimo para aleatorios (entero > 0): "))
-    # in_min = 10
+    # in_min = int(input("Ingresa el numero mínimo para aleatorios (entero > 0): "))
+    in_min = 10
 
     # solicitar max para aleatorios
-    in_max = int(input("Ingresa el numero máximo para aleatorios (entero > 0): "))
-    # in_max = 20
+    # in_max = int(input("Ingresa el numero máximo para aleatorios (entero > 0): "))
+    in_max = 20
 
     # solicitar tamaño de matriz
-    in_mat = int(input("Ingresa el valor de N para la matriz N x N (entero > 2): "))
-    # in_mat = 8
+    # in_mat = int(input("Ingresa el valor de N para la matriz N x N (entero > 2): "))
+    in_mat = 8
 
     # solicitar nombre de jugador
-    in_nom = str(input("Ingresa el nombre del jugador: "))
-    # in_nom = 'john connor'
-    # yeah
+    # in_nom = str(input("Ingresa el nombre del jugador: "))
+    in_nom = 'jugador'
 
-    # print('\n john connor: \r', ' buen intento ... \r')
-    loading = 'John Connor'
-    time.sleep(2)
-    print('\nBuen intento ...\n')
-    time.sleep(2)
-    for i in range(11):
-        print(loading[i], sep='', end=' ', flush=True)
-        time.sleep(0.25)
-    time.sleep(3)
+    # Dinamica John Connor
+    # loading = 'John Connor'
+    # time.sleep(2)
+    # print('\nBuen intento ...\n')
+    # time.sleep(2)
+    # for i in range(11):
+    #    print(loading[i], sep='', end=' ', flush=True)
+    #    time.sleep(0.25)
 
     # imprimir mensaje de inicio
-    print("\n \n ................ Dia del Juicio Final ................ \n")
-    time.sleep(2)
+    # time.sleep(3)
+    # print("\n \n ................ Dia del Juicio Final ................ \n")
+    # time.sleep(2)
 
     # Inicializar tablero
     juego_tablero = Tablero(tab_min=in_min, tab_max=in_max, tab_size=in_mat,
                             tab_player=in_nom, tab_dif=in_dif, tab_score=0)
 
+    # Inicializar jugadores
+    jug_0 = Jugador(jug_posicion=[0, 0], jug_iscpu=True)
+    jug_1 = Jugador(jug_posicion=[in_mat, in_mat], jug_iscpu=False)
+
     # Imprimir tablero
     print(juego_tablero)
-    print('Skynet: *')
-    print('Connor, john: o \n \n')
-    time.sleep(1.5)
+    # time.sleep(1.5)
+
+    # -- ------------------------------------------------------------------------------------------ Ciclo de juego -- #
 
     # Funcion jugar
     jugar()
