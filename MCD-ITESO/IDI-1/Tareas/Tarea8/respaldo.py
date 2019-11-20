@@ -113,7 +113,6 @@ print(juego)
 
 # --- VERSION 2 --
 
-
 from queue import Queue as queue
 import numpy as np
 

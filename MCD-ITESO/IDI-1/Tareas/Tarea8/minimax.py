@@ -9,6 +9,49 @@ import numpy as np
 # import time
 
 
+# -- -------------------------------------------------------------------------- Funcion Global : Inicializar Juego -- #
+# ------------------------------------------------------------------------------------------------------------------- #
+
+def inicializar():
+    # Jugador CPU
+    jug_0 = Jugador(jug_posicion=[0, 0], jug_iscpu=True, jug_ismax=True, jug_nombre='skynet', jug_simbolo='*')
+    # Jugador Humano
+    jug_1 = Jugador(jug_posicion=[in_mat, in_mat], jug_iscpu=False, jug_ismax=False, jug_nombre='John Connor',
+                    jug_simbolo='#')
+    # Inicializar tablero
+    jg_tablero = Tablero(tab_min=in_min, tab_max=in_max, tab_dims=in_mat, tab_jugs=[jug_0, jug_1], tab_dif=in_dif,
+                         tab_score=0)
+
+    # -- ----------------------------------------------------------------------------------------- Inicializar CPU -- #
+    # Simbolo en celda
+    jg_tablero.tab_celdas[0][0].cel_simbolo = jg_tablero.tab_jugadores[0].jug_simbolo
+    # Celda visitada
+    jg_tablero.tab_celdas[0][0].cel_visitada = True
+    # Controlador de la celda
+    jg_tablero.tab_celdas[0][0].cel_controlador = jg_tablero.tab_jugadores[0].jug_nombre
+    # Posicion del jugador
+    jg_tablero.tab_jugadores[0].jug_posicion[0] = 0
+    jg_tablero.tab_jugadores[0].jug_posicion[1] = 0
+    # Puntos del jugador
+    jg_tablero.tab_jugadores[0].jug_puntos = 0
+
+    # -- ------------------------------------------------------------------------------------- Inicializar JUGADOR -- #
+    # Simbolo en celda
+    jg_tablero.tab_celdas[7][7].cel_simbolo = jg_tablero.tab_jugadores[1].jug_simbolo
+    # Celda visitada
+    jg_tablero.tab_celdas[7][7].cel_visitada = True
+    # Controlador de la celda
+    jg_tablero.tab_celdas[7][7].cel_controlador = jg_tablero.tab_jugadores[1].jug_nombre
+    # Posicion del jugador
+    jg_tablero.tab_jugadores[1].jug_posicion[0] = 7
+    jg_tablero.tab_jugadores[1].jug_posicion[1] = 7
+    # Puntos del jugador
+    jg_tablero.tab_jugadores[1].jug_puntos = 0
+    print('todo bien inicializar')
+
+    return jg_tablero
+
+
 # -- ------------------------------------------------------------------------- Funcion Global : Entrada de usuario -- #
 # ------------------------------------------------------------------------------------------------------------------- #
 
@@ -28,6 +71,7 @@ def jugar():
     # Calcular score de tablero
 
     # Repetir proceso mientras no haya un Break en el while
+    return jg_mov
 
 
 def input_usuario():
@@ -102,11 +146,8 @@ class Tablero(object):
         self.tab_celdas = [[Celda(cel_valor=np.random.randint(tab_min, tab_max), cel_posicion=(i, j))
                             for j in range(tab_dims)] for i in range(tab_dims)]
 
-        # inicializar en celda (0, 0) a CPU
-        # inicializar en celda (N, N) a Persona
-
     def __str__(self):
-        res = "\n"
+        res = '\n'
         # Filas
         for i in range(len(self.tab_celdas)):
             # Columnas
@@ -139,9 +180,26 @@ class Celda(object):
 
     def __str__(self):
         if len(str(self.cel_valor)) % 2 == 0:
-            return f'{self.cel_simbolo} {self.cel_valor} {self.cel_simbolo}'
+
+            if self.cel_controlador == juego_tablero.tab_jugadores[0].jug_nombre:
+                return f'{juego_tablero.tab_jugadores[0].jug_simbolo}{self.cel_valor}' \
+                       f'{juego_tablero.tab_jugadores[0].jug_simbolo}'
+
+            elif self.cel_controlador == juego_tablero.tab_jugadores[1].jug_nombre:
+                return f'{juego_tablero.tab_jugadores[1].jug_simbolo}{self.cel_valor}' \
+                       f'{juego_tablero.tab_jugadores[1].jug_simbolo}'
+            else:
+                return f' {self.cel_valor } '
         else:
-            return f'{self.cel_simbolo} 0{self.cel_valor} {self.cel_simbolo}'
+            if self.cel_controlador == juego_tablero.tab_jugadores[0].jug_nombre:
+                return f'{juego_tablero.tab_jugadores[0].jug_simbolo}{self.cel_valor}' \
+                       f'{juego_tablero.tab_jugadores[0].jug_simbolo}'
+
+            elif self.cel_controlador == juego_tablero.tab_jugadores[1].jug_nombre:
+                return f'{juego_tablero.tab_jugadores[1].jug_simbolo}{self.cel_valor}' \
+                       f'{juego_tablero.tab_jugadores[1].jug_simbolo}'
+            else:
+                return f' { self.cel_valor } '
 
 # Validar
 # input_usuario()
@@ -201,18 +259,10 @@ if __name__ == '__main__':
     # print("\n \n ................ Dia del Juicio Final ................ \n")
     # time.sleep(2)
 
-    # Jugador CPU
-    jug_0 = Jugador(jug_posicion=[0, 0], jug_iscpu=True, jug_ismax=True, jug_nombre='skynet', jug_simbolo='*')
-    # Jugador Humano
-    jug_1 = Jugador(jug_posicion=[in_mat, in_mat], jug_iscpu=False, jug_ismax=False, jug_nombre='John Connor',
-                    jug_simbolo='#')
-
-    # Inicializar tablero
-    jg_tablero = Tablero(tab_min=in_min, tab_max=in_max, tab_dims=in_mat,
-                         tab_jugs=[jug_0, jug_1], tab_dif=in_dif, tab_score=0)
+    juego_tablero = inicializar()
 
     # Imprimir tablero
-    print(jg_tablero)
+    print(juego_tablero)
     # time.sleep(1.5)
 
     # -- ------------------------------------------------------------------------------------------ Ciclo de juego -- #
