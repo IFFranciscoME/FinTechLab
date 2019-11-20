@@ -6,7 +6,7 @@
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
 import numpy as np
-# import time
+import time
 
 
 # -- -------------------------------------------------------------------------- Funcion Global : Inicializar Juego -- #
@@ -60,8 +60,10 @@ def jugar():
 
     # Solicitar movimiento a jugador
     jg_mov = input_usuario()
-    # Verificar que sea movimiento valido
 
+    # Verificar que sea movimiento valido
+    cel_mov = juego_tablero.validar_mov(mov_jg=1, mov_dir=jg_mov)
+    print(cel_mov)
     # Actualizar celda destino con movimiento de jugador
     # Calcular Score de tablero
     # Desplegar score en el tablero
@@ -73,6 +75,9 @@ def jugar():
     # Repetir proceso mientras no haya un Break en el while
     return jg_mov
 
+
+# -- ------------------------------------------------------------------------- Funcion Global : Entrada de usuario -- #
+# ------------------------------------------------------------------------------------------------------------------- #
 
 def input_usuario():
 
@@ -91,9 +96,11 @@ def input_usuario():
     elif in_mov == 4:
         return 'izquierda'
     else:
+        time.sleep(2)
         print(" \n ")
         print("** Movimiento no valido, intenta de nuevo ** ")
         print(" \n ")
+        time.sleep(2)
 
         return input_usuario()
 
@@ -156,6 +163,30 @@ class Tablero(object):
                 res += f'{self.tab_celdas[i][j]}|'
             res += '\n'
         return res
+
+    def validar_mov(self, mov_jg, mov_dir):
+
+        # Solicitar posicion actual de jugador elegido
+        x = self.tab_jugadores[mov_jg].jug_posicion[0]
+        y = self.tab_jugadores[mov_jg].jug_posicion[1]
+
+        # Construir nueva direccion de celda a partir de movimiento deseado
+        if mov_dir == 'arriba' and 0 < y - 1 <= 7:
+            y = y - 1
+        elif mov_dir == 'derecha' and 0 < x + 1 <= 7:
+            x = x + 1
+        elif mov_dir == 'abajo' and 0 < y + 1 <= 7:
+            y = y + 1
+        elif mov_dir == 'izquierda' and 0 < x - 1 <= 7:
+            x = x - 1
+        else:
+            return False
+
+        # Validacion 2 = Celda no esta ocupada
+        if self.tab_celdas[x][y].cel_visitada:
+            return False
+        else:
+            return True
 
 
 # -- ------------------------------------------------------------------------------------------------ Clase: Celda -- #
@@ -231,7 +262,7 @@ if __name__ == '__main__':
 
     # solicitar min para aleatorios
     # in_min = int(input("Ingresa el numero mínimo para aleatorios (entero > 0): "))
-    in_min = 5
+    in_min = 1
 
     # solicitar max para aleatorios
     # in_max = int(input("Ingresa el numero máximo para aleatorios (entero > 0): "))
