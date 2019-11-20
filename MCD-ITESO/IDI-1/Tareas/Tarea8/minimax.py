@@ -182,24 +182,24 @@ class Celda(object):
         if len(str(self.cel_valor)) % 2 == 0:
 
             if self.cel_controlador == juego_tablero.tab_jugadores[0].jug_nombre:
-                return f'{juego_tablero.tab_jugadores[0].jug_simbolo}{self.cel_valor}' \
+                return f'{juego_tablero.tab_jugadores[0].jug_simbolo}0{self.cel_valor}' \
                        f'{juego_tablero.tab_jugadores[0].jug_simbolo}'
 
             elif self.cel_controlador == juego_tablero.tab_jugadores[1].jug_nombre:
-                return f'{juego_tablero.tab_jugadores[1].jug_simbolo}{self.cel_valor}' \
+                return f'{juego_tablero.tab_jugadores[1].jug_simbolo}0{self.cel_valor}' \
                        f'{juego_tablero.tab_jugadores[1].jug_simbolo}'
             else:
                 return f' {self.cel_valor } '
         else:
             if self.cel_controlador == juego_tablero.tab_jugadores[0].jug_nombre:
-                return f'{juego_tablero.tab_jugadores[0].jug_simbolo}{self.cel_valor}' \
+                return f'{juego_tablero.tab_jugadores[0].jug_simbolo}0{self.cel_valor}' \
                        f'{juego_tablero.tab_jugadores[0].jug_simbolo}'
 
             elif self.cel_controlador == juego_tablero.tab_jugadores[1].jug_nombre:
-                return f'{juego_tablero.tab_jugadores[1].jug_simbolo}{self.cel_valor}' \
+                return f'{juego_tablero.tab_jugadores[1].jug_simbolo}0{self.cel_valor}' \
                        f'{juego_tablero.tab_jugadores[1].jug_simbolo}'
             else:
-                return f' { self.cel_valor } '
+                return f' 0{ self.cel_valor } '
 
 # Validar
 # input_usuario()
@@ -231,11 +231,11 @@ if __name__ == '__main__':
 
     # solicitar min para aleatorios
     # in_min = int(input("Ingresa el numero mínimo para aleatorios (entero > 0): "))
-    in_min = 10
+    in_min = 5
 
     # solicitar max para aleatorios
     # in_max = int(input("Ingresa el numero máximo para aleatorios (entero > 0): "))
-    in_max = 20
+    in_max = 9
 
     # solicitar tamaño de matriz
     # in_mat = int(input("Ingresa el valor de N para la matriz N x N (entero > 2): "))
