@@ -16,7 +16,7 @@ def jugar():
     # While con bandera de si el juego termino
 
     # Solicitar movimiento a jugador
-    movimiento = input_usuario()
+    jg_mov = input_usuario()
     # Verificar que sea movimiento valido
 
     # Actualizar celda destino con movimiento de jugador
@@ -58,7 +58,7 @@ def input_usuario():
 # ------------------------------------------------------------------------------------------------------------------- #
 
 class Jugador(object):
-    def __init__(self, jug_posicion, jug_iscpu):
+    def __init__(self, jug_posicion, jug_iscpu, jug_ismax=None, jug_nombre=None, jug_simbolo=None):
         """
         :param jug_posicion: list : [1, 2] : posicion en el tablero del jugador
         :param jug_iscpu: bool : True/False : bandera si el jugador es cpu (si no es cpu es humano)
@@ -68,11 +68,11 @@ class Jugador(object):
         # Inicializar la bandera sobre si el jugador es el CPU
         self.jug_iscpu = jug_iscpu
         # Inicializar si el jugador es max
-        self.jug_ismax = None
+        self.jug_ismax = jug_ismax
         # Inicializar el nombre del jugador
-        self.jug_nombre = None
+        self.jug_nombre = jug_nombre
         # Inicializar el simbolo en el tablero del jugador
-        self.jug_simbolo = None
+        self.jug_simbolo = jug_simbolo
         # Inicializar celdas que ha visitado el jugador
         self.jug_celdasvis = None
         # Inicializar puntos que lleva el jugador
@@ -85,11 +85,11 @@ class Jugador(object):
 class Tablero(object):
 
     # Inicializar el tablero
-    def __init__(self, tab_score, tab_size, tab_min, tab_max, tab_dif, tab_player):
+    def __init__(self, tab_score, tab_dims, tab_min, tab_max, tab_dif, tab_jugs):
         # El score del tablero
         self.tab_score = tab_score
         # El tamaño del tablero [8, 8]
-        self.tab_size = tab_size
+        self.tab_size = tab_dims
         # Valor minimo para simular los aleatorios
         self.tab_min = tab_min
         # Valor maximo para simular los aleatorios
@@ -97,10 +97,10 @@ class Tablero(object):
         # Nivel de dificultad
         self.tab_dif = tab_dif
         # Nombre del jugador
-        self.tab_player = tab_player
+        self.tab_jugadores = tab_jugs
         # Celdas dentro de tablero
         self.tab_celdas = [[Celda(cel_valor=np.random.randint(tab_min, tab_max), cel_posicion=(i, j))
-                            for j in range(tab_size)] for i in range(tab_size)]
+                            for j in range(tab_dims)] for i in range(tab_dims)]
 
         # inicializar en celda (0, 0) a CPU
         # inicializar en celda (N, N) a Persona
@@ -132,10 +132,10 @@ class Celda(object):
         self.cel_posicion = cel_posicion
         # Para identificar si la celda fue visitada (independiente de quien la visito)
         self.cel_visitada = False
-        # Para identificar el jugador que visito la celda (True == cpu, False == jugador)
-        self.cel_visitante = True
+        # Para identificar cual jugador controla la celda (visito la celda)
+        self.cel_controlador = None
         # Para usar simbolo segun jugador en la impresion del tablero
-        self.cel_simbolo = '*' if self.cel_visitante else ' '
+        self.cel_simbolo = ''
 
     def __str__(self):
         if len(str(self.cel_valor)) % 2 == 0:
@@ -201,16 +201,18 @@ if __name__ == '__main__':
     # print("\n \n ................ Dia del Juicio Final ................ \n")
     # time.sleep(2)
 
-    # Inicializar tablero
-    juego_tablero = Tablero(tab_min=in_min, tab_max=in_max, tab_size=in_mat,
-                            tab_player=in_nom, tab_dif=in_dif, tab_score=0)
+    # Jugador CPU
+    jug_0 = Jugador(jug_posicion=[0, 0], jug_iscpu=True, jug_ismax=True, jug_nombre='skynet', jug_simbolo='*')
+    # Jugador Humano
+    jug_1 = Jugador(jug_posicion=[in_mat, in_mat], jug_iscpu=False, jug_ismax=False, jug_nombre='John Connor',
+                    jug_simbolo='#')
 
-    # Inicializar jugadores
-    jug_0 = Jugador(jug_posicion=[0, 0], jug_iscpu=True)
-    jug_1 = Jugador(jug_posicion=[in_mat, in_mat], jug_iscpu=False)
+    # Inicializar tablero
+    jg_tablero = Tablero(tab_min=in_min, tab_max=in_max, tab_dims=in_mat,
+                         tab_jugs=[jug_0, jug_1], tab_dif=in_dif, tab_score=0)
 
     # Imprimir tablero
-    print(juego_tablero)
+    print(jg_tablero)
     # time.sleep(1.5)
 
     # -- ------------------------------------------------------------------------------------------ Ciclo de juego -- #
