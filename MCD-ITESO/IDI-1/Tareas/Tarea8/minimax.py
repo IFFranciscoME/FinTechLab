@@ -33,7 +33,7 @@ def inicializar():
     jg_tablero.tab_jugadores[0].jug_posicion[0] = 0
     jg_tablero.tab_jugadores[0].jug_posicion[1] = 0
     # Puntos del jugador
-    jg_tablero.tab_jugadores[0].jug_puntos = 0
+    jg_tablero.tab_jugadores[1].jug_puntos = jg_tablero.tab_celdas[0][0].cel_valor
 
     # -- ------------------------------------------------------------------------------------- Inicializar JUGADOR -- #
     # Simbolo en celda
@@ -46,7 +46,8 @@ def inicializar():
     jg_tablero.tab_jugadores[1].jug_posicion[0] = 7
     jg_tablero.tab_jugadores[1].jug_posicion[1] = 7
     # Puntos del jugador
-    jg_tablero.tab_jugadores[1].jug_puntos = 0
+    jg_tablero.tab_jugadores[1].jug_puntos = jg_tablero.tab_celdas[7][7].cel_valor
+
     print('todo bien inicializar')
 
     return jg_tablero
@@ -61,10 +62,12 @@ def jugar():
     # Solicitar movimiento a jugador
     jg_mov = input_usuario()
 
-    # Verificar que sea movimiento valido
+    # Validar Movimiento - Verificar que sea movimiento valido
     cel_mov = juego_tablero.validar_mov(mov_jg=1, mov_dir=jg_mov)
     print(cel_mov)
     # Actualizar celda destino con movimiento de jugador
+    juego_tablero.realizar_mov(mov_jg=1, mov_dir=jg_mov)
+    print(juego_tablero)
     # Calcular Score de tablero
     # Desplegar score en el tablero
     # Mostrar mensaje que cpu esta moviendo
@@ -150,8 +153,10 @@ class Tablero(object):
         # Nombre del jugador
         self.tab_jugadores = tab_jugs
         # Celdas dentro de tablero
+        # self.tab_celdas = [[Celda(cel_valor=np.random.randint(tab_min, tab_max), cel_posicion=(i, j))
+        #                     for j in range(tab_dims)] for i in range(tab_dims)]
         self.tab_celdas = [[Celda(cel_valor=np.random.randint(tab_min, tab_max), cel_posicion=(i, j))
-                            for j in range(tab_dims)] for i in range(tab_dims)]
+                            for i in range(tab_dims)] for j in range(tab_dims)]
 
     def __str__(self):
         res = '\n'
@@ -164,29 +169,63 @@ class Tablero(object):
             res += '\n'
         return res
 
+    # Para validar un movimiento de un jugador
     def validar_mov(self, mov_jg, mov_dir):
 
         # Solicitar posicion actual de jugador elegido
         x = self.tab_jugadores[mov_jg].jug_posicion[0]
         y = self.tab_jugadores[mov_jg].jug_posicion[1]
 
-        # Construir nueva direccion de celda a partir de movimiento deseado
+        # Validacion 1 = Movimiento dentro del tablero
         if mov_dir == 'arriba' and 0 < y - 1 <= 7:
             y = y - 1
+            x = x
         elif mov_dir == 'derecha' and 0 < x + 1 <= 7:
             x = x + 1
+            y = y
         elif mov_dir == 'abajo' and 0 < y + 1 <= 7:
             y = y + 1
+            x = x
         elif mov_dir == 'izquierda' and 0 < x - 1 <= 7:
             x = x - 1
+            y = y
         else:
             return False
 
         # Validacion 2 = Celda no esta ocupada
         if self.tab_celdas[x][y].cel_visitada:
-            return False
+            return {'validez': False, 'posicion': None}
         else:
-            return True
+            return {'validez': True, 'posicion': [x, y]}
+
+    # Para realizar el movimiento
+    def realizar_mov(self, mov_jg, mov_dir):
+        # Proceder si el movimiento es valido
+        val = self.validar_mov(mov_jg, mov_dir)
+        if val['validez']:
+            x = val['posicion'][0]
+            y = val['posicion'][1]
+            jugador = mov_jg
+
+            # print('x seria: ' + str(x))
+            # print('y seria: ' + str(y))
+            # print('la posicion actual del jugador es: ' + str(juego_tablero.tab_jugadores[mov_jg].jug_posicion[0]) +
+            #      ',' + str(juego_tablero.tab_jugadores[mov_jg].jug_posicion[0]))
+            # print('la nueva posicion seria: ' + str(x) + ',' + str(y))
+            # print('valor de la celda destino: ' + str(juego_tablero.tab_celdas[y][x].cel_valor))
+
+            # Actualizar posicion de jugador
+            juego_tablero.tab_jugadores[mov_jg].jug_posicion[0] = y
+            juego_tablero.tab_jugadores[mov_jg].jug_posicion[1] = x
+            # Actualizar el Controlador de la celda
+            juego_tablero.tab_celdas[y][x].cel_controlador = juego_tablero.tab_jugadores[jugador].jug_nombre
+            # Actualizar Simbolo en celda
+            juego_tablero.tab_celdas[y][x].cel_simbolo = juego_tablero.tab_jugadores[jugador].jug_simbolo
+            # Actualizar que Celda esta visitada
+            juego_tablero.tab_celdas[y][x].cel_visitada = True
+            # Actualizar score de tablero
+            juego_tablero.tab_jugadores[jugador].jug_puntos += juego_tablero.tab_celdas[y][x].cel_valor
+            # print('puntos ganados: ' + str(juego_tablero.tab_jugadores[jugador].jug_puntos))
 
 
 # -- ------------------------------------------------------------------------------------------------ Clase: Celda -- #
@@ -213,11 +252,11 @@ class Celda(object):
         if len(str(self.cel_valor)) % 2 == 0:
 
             if self.cel_controlador == juego_tablero.tab_jugadores[0].jug_nombre:
-                return f'{juego_tablero.tab_jugadores[0].jug_simbolo}0{self.cel_valor}' \
+                return f'{juego_tablero.tab_jugadores[0].jug_simbolo}{self.cel_valor}' \
                        f'{juego_tablero.tab_jugadores[0].jug_simbolo}'
 
             elif self.cel_controlador == juego_tablero.tab_jugadores[1].jug_nombre:
-                return f'{juego_tablero.tab_jugadores[1].jug_simbolo}0{self.cel_valor}' \
+                return f'{juego_tablero.tab_jugadores[1].jug_simbolo}{self.cel_valor}' \
                        f'{juego_tablero.tab_jugadores[1].jug_simbolo}'
             else:
                 return f' {self.cel_valor } '
@@ -266,7 +305,7 @@ if __name__ == '__main__':
 
     # solicitar max para aleatorios
     # in_max = int(input("Ingresa el numero máximo para aleatorios (entero > 0): "))
-    in_max = 9
+    in_max = 20
 
     # solicitar tamaño de matriz
     # in_mat = int(input("Ingresa el valor de N para la matriz N x N (entero > 2): "))
