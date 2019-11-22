@@ -13,13 +13,29 @@ import time
 # ------------------------------------------------------------------------------------------------------------------- #
 
 def jugar():
-    i = 3
+    jugador = 1
     # While con bandera de si el juego termino
-    while i > 0:
+    while juego_tablero.mov_disponibles(jugador):
 
         # -- ---------------------------------------------------------------------------------- Movimiento PERSONA -- #
+
+        # -- Validar movimiento aceptado (Dentro de tablero)
+
         # Solicitar movimiento a jugador
         jg_mov = input_usuario()
+
+        # Ciclo infinito de pregunta por movimiento hasta que ingrese uno válido
+        while not juego_tablero.mov_tablero(jugador, jg_mov):
+
+            print('movimiento no valido')
+            # Solicitar movimiento a jugador
+            jg_mov = input_usuario()
+
+        # Regresa coordenadas de movimiento valido por tablero
+        x, y = juego_tablero.mov_tablero(mov_jg=1, mov_dir=jg_mov)
+
+        # Actualizar celda destino con movimiento de jugador
+        juego_tablero.realizar_mov(mov_jg=1, x=x, y=y)
 
         # Validar que existan movimientos disponibles
         # mov_disp = juego.tablero.mov_disp(mov_jg=1)
@@ -31,12 +47,6 @@ def jugar():
         # print('Score: ' + str(juego_tablero.tab_score))
         # break
 
-        # Validar movimiento aceptado (Dentro de tablero)
-        juego_tablero.validar_mov(mov_jg=1, mov_dir=jg_mov)
-
-        # Actualizar celda destino con movimiento de jugador
-        juego_tablero.realizar_mov(mov_jg=1, mov_dir=jg_mov)
-
         print(juego_tablero)
         print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
         print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
@@ -47,13 +57,18 @@ def jugar():
         print('\nSkynet moviendo: ')
 
         # Calcular movimiento a cpu
-        time.sleep(2)
+        time.sleep(.5)
 
         # Actualizar celda destino con movimiento de cpu
-        juego_tablero.realizar_mov(mov_jg=0, mov_dir='abajo')
+        juego_tablero.realizar_mov(mov_jg=0, x=0, y=2)
+
+        # Imprimir tablero y marcadores
+        print(juego_tablero)
+        print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
+        print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
+        print('Score: ' + str(juego_tablero.tab_score))
 
         # Repetir proceso mientras no haya un Break en el while
-        i -= 1
 
     return True
 
@@ -101,6 +116,26 @@ def inicializar():
 
     return jg_tablero
 
+
+# -- ------------------------------------------------------------------------ Funcion Global : Dia de Juicio Final -- #
+# ------------------------------------------------------------------------------------------------------------------- #
+
+def juicio_final():
+
+    d1 = '\nAgosto 4, 1997 : Cyberdine activa al protocolo Skynet'
+    time.sleep(1)
+    d2 = '\nAgosto 29, 1997 : 02:14:00 EST Skynet se vuelve autoconciente'
+    time.sleep(1)
+    d3 = '\nAgosto 29, 1997 : 02:14:01 EST Skynet lanza cohetes nucleares a Rusia'
+    time.sleep(1)
+    d3 = '\nSkynet incita un contra ataque contra los humanos, quienes, en panico, tratan de desconectarla'
+    time.sleep(1)
+    d4 = '\n ... '
+
+    # for i in range(11):
+    #     print(loading[i], sep='', end=' ', flush=True)
+    # time.sleep(0.25)
+    # d5 = ' ... llamada entrante '
 
 # -- ------------------------------------------------------------------------- Funcion Global : Entrada de usuario -- #
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -190,63 +225,74 @@ class Tablero(object):
             res += '\n'
         return res
 
-    # Para validar un movimiento de un jugador
-    def validar_mov(self, mov_jg, mov_dir):
+    # Para validar un movimiento dentro del tablero
+    def mov_tablero(self, mov_jg, mov_dir):
 
         # Solicitar posicion actual de jugador elegido
         x = self.tab_jugadores[mov_jg].jug_posicion[0]
         y = self.tab_jugadores[mov_jg].jug_posicion[1]
 
         # Validacion 1 = Movimiento dentro del tablero
-        if mov_dir == 'arriba' and 0 < y - 1 <= 7:
-            y = y - 1
+        if mov_dir == 'arriba' and 0 <= y - 1 <= 7:
             x = x
-        elif mov_dir == 'derecha' and 0 < x + 1 <= 7:
+            y = y - 1
+        elif mov_dir == 'derecha' and 0 <= x + 1 <= 7:
             x = x + 1
             y = y
-        elif mov_dir == 'abajo' and 0 < y + 1 <= 7:
-            y = y + 1
+        elif mov_dir == 'abajo' and 0 <= y + 1 <= 7:
             x = x
-        elif mov_dir == 'izquierda' and 0 < x - 1 <= 7:
+            y = y + 1
+        elif mov_dir == 'izquierda' and 0 <= x - 1 <= 7:
             x = x - 1
             y = y
         else:
             return False
 
-        # Validacion 2 = Celda no esta ocupada
-        if self.tab_celdas[y][x].cel_visitada:
-            return {'validez': False, 'posicion': None}
+        # Validacion 2: que la celda no este visitada
+        if not self.tab_celdas[y][x].cel_visitada:
+            return x, y
+
+    # Para validar si hay movimientos permitidos
+    def mov_disponibles(self, mov_jg):
+
+        # Validar que exista movimiento dentro de tablero & la celda no este ocupada (que ambos sean True)
+        # probar hacia arriba
+        # x, y = self.mov_tablero(mov_jg, 'arriba')
+        if self.mov_tablero(mov_jg, 'arriba'):
+            return True
+
+        # probar hacia derecha
+        # x, y = self.mov_tablero(mov_jg, 'derecha')
+        if self.mov_tablero(mov_jg, 'derecha'):
+            return True
+
+        # probar hacia abajo
+        # x, y = self.mov_tablero(mov_jg, 'abajo')
+        if self.mov_tablero(mov_jg, 'abajo'):
+            return True
+
+        # probar hacia izquierda
+        # x, y = self.mov_tablero(mov_jg, 'izquierda')
+        if self.mov_tablero(mov_jg, 'izquierda'):
+            return True
+
         else:
-            return {'validez': True, 'posicion': [x, y]}
+            return False
 
-    # Para realizar el movimiento
-    def realizar_mov(self, mov_jg, mov_dir):
-        # Proceder si el movimiento es valido
-        val = self.validar_mov(mov_jg, mov_dir)
-        if val['validez']:
-            x = val['posicion'][0]
-            y = val['posicion'][1]
-            jugador = mov_jg
-
-            # print('x seria: ' + str(x))
-            # print('y seria: ' + str(y))
-            # print('la posicion actual del jugador es: ' + str(juego_tablero.tab_jugadores[mov_jg].jug_posicion[0]) +
-            #      ',' + str(juego_tablero.tab_jugadores[mov_jg].jug_posicion[0]))
-            # print('la nueva posicion seria: ' + str(x) + ',' + str(y))
-            # print('valor de la celda destino: ' + str(juego_tablero.tab_celdas[y][x].cel_valor))
-
-            # Actualizar posicion de jugador
-            juego_tablero.tab_jugadores[mov_jg].jug_posicion[0] = x
-            juego_tablero.tab_jugadores[mov_jg].jug_posicion[1] = y
-            # Actualizar el Controlador de la celda
-            juego_tablero.tab_celdas[y][x].cel_controlador = juego_tablero.tab_jugadores[jugador].jug_nombre
-            # Actualizar Simbolo en celda
-            juego_tablero.tab_celdas[y][x].cel_simbolo = juego_tablero.tab_jugadores[jugador].jug_simbolo
-            # Actualizar que Celda esta visitada
-            juego_tablero.tab_celdas[y][x].cel_visitada = True
-            # Actualizar score de tablero
-            juego_tablero.tab_jugadores[jugador].jug_puntos += juego_tablero.tab_celdas[y][x].cel_valor
-            # print('puntos ganados: ' + str(juego_tablero.tab_jugadores[jugador].jug_puntos))
+    # Realizar un movimiento en el tablero
+    def realizar_mov(self, mov_jg, x, y):
+        # Actualizar posicion de jugador
+        self.tab_jugadores[mov_jg].jug_posicion[0] = x
+        self.tab_jugadores[mov_jg].jug_posicion[1] = y
+        # Actualizar el Controlador de la celda
+        self.tab_celdas[y][x].cel_controlador = self.tab_jugadores[mov_jg].jug_nombre
+        # Actualizar Simbolo en celda
+        self.tab_celdas[y][x].cel_simbolo = self.tab_jugadores[mov_jg].jug_simbolo
+        # Actualizar que Celda esta visitada
+        self.tab_celdas[y][x].cel_visitada = True
+        # Actualizar score de tablero
+        self.tab_jugadores[mov_jg].jug_puntos += self.tab_celdas[y][x].cel_valor
+        # print('puntos ganados: ' + str(juego_tablero.tab_jugadores[jugador].jug_puntos))
 
 
 # -- ------------------------------------------------------------------------------------------------ Clase: Celda -- #
@@ -351,3 +397,6 @@ if __name__ == '__main__':
 
     # Funcion jugar
     jugar()
+
+    juicio_final()
+
