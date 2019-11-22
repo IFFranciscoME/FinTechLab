@@ -13,28 +13,49 @@ import time
 # ------------------------------------------------------------------------------------------------------------------- #
 
 def jugar():
+    i = 3
     # While con bandera de si el juego termino
+    while i > 0:
 
-    # Solicitar movimiento a jugador
-    jg_mov = input_usuario()
+        # -- ---------------------------------------------------------------------------------- Movimiento PERSONA -- #
+        # Solicitar movimiento a jugador
+        jg_mov = input_usuario()
 
-    # Validar Movimiento - Verificar que sea movimiento valido
-    juego_tablero.validar_mov(mov_jg=1, mov_dir=jg_mov)
+        # Validar que existan movimientos disponibles
+        # mov_disp = juego.tablero.mov_disp(mov_jg=1)
+        # if not mov_disp:
+        # print('\nDia del juicio final ...')
+        # print(juego_tablero)
+        # print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
+        # print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
+        # print('Score: ' + str(juego_tablero.tab_score))
+        # break
 
-    # Actualizar celda destino con movimiento de jugador
-    juego_tablero.realizar_mov(mov_jg=1, mov_dir=jg_mov)
-    print(juego_tablero)
-    print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
-    print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
-    # Calcular Score de tablero
-    # Desplegar score en el tablero
-    # Mostrar mensaje que cpu esta moviendo
-    # Calcular movimiento a cpu
-    # Actualizar celda destino con movimiento de cpu
-    # Calcular score de tablero
+        # Validar movimiento aceptado (Dentro de tablero)
+        juego_tablero.validar_mov(mov_jg=1, mov_dir=jg_mov)
 
-    # Repetir proceso mientras no haya un Break en el while
-    return jg_mov
+        # Actualizar celda destino con movimiento de jugador
+        juego_tablero.realizar_mov(mov_jg=1, mov_dir=jg_mov)
+
+        print(juego_tablero)
+        print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
+        print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
+        print('Score: ' + str(juego_tablero.tab_score))
+
+        # -- -------------------------------------------------------------------------------------- Movimiento CPU -- #
+        # Mostrar mensaje que cpu esta moviendo
+        print('\nSkynet moviendo: ')
+
+        # Calcular movimiento a cpu
+        time.sleep(2)
+
+        # Actualizar celda destino con movimiento de cpu
+        juego_tablero.realizar_mov(mov_jg=0, mov_dir='abajo')
+
+        # Repetir proceso mientras no haya un Break en el while
+        i -= 1
+
+    return True
 
 
 # -- -------------------------------------------------------------------------- Funcion Global : Inicializar Juego -- #
@@ -58,8 +79,8 @@ def inicializar():
     # Controlador de la celda
     jg_tablero.tab_celdas[0][0].cel_controlador = jg_tablero.tab_jugadores[0].jug_nombre
     # Posicion del jugador
-    jg_tablero.tab_jugadores[0].jug_posicion[0] = 0
-    jg_tablero.tab_jugadores[0].jug_posicion[1] = 0
+    jg_tablero.tab_jugadores[0].jug_posicion[0] = 0  # Componente X
+    jg_tablero.tab_jugadores[0].jug_posicion[1] = 0  # Componente Y
     # Puntos del jugador
     jg_tablero.tab_jugadores[0].jug_puntos = jg_tablero.tab_celdas[0][0].cel_valor
 
@@ -75,8 +96,8 @@ def inicializar():
     jg_tablero.tab_jugadores[1].jug_posicion[1] = 7
     # Puntos del jugador
     jg_tablero.tab_jugadores[1].jug_puntos = jg_tablero.tab_celdas[7][7].cel_valor
-
-    # print('bien inicializar')
+    # Inicializar Score de Tablero (Skynet - John Connor)
+    jg_tablero.tab_score = jg_tablero.tab_jugadores[0].jug_puntos - jg_tablero.tab_jugadores[1].jug_puntos
 
     return jg_tablero
 
@@ -86,11 +107,11 @@ def inicializar():
 
 def input_usuario():
 
+    print('')
     print("----------------- ¿A dónde vas a mover? ----------------- ")
     print("---------- ------------------------------ --------------- ")
     print("  1 = arriba, 2 = derecha, 3 = abajo, 4 = izquierda       ")
-    print("---------- ------------------------------ --------------- ")
-    in_mov = int(input("Movimiento: "))
+    in_mov = int(input("\nMovimiento: "))
 
     if in_mov == 1:
         return 'arriba'
@@ -101,11 +122,11 @@ def input_usuario():
     elif in_mov == 4:
         return 'izquierda'
     else:
-        time.sleep(2)
+        time.sleep(1)
         print(" \n ")
         print("** Movimiento no valido, intenta de nuevo ** ")
         print(" \n ")
-        time.sleep(2)
+        time.sleep(1)
 
         return input_usuario()
 
@@ -155,8 +176,6 @@ class Tablero(object):
         # Nombre del jugador
         self.tab_jugadores = tab_jugs
         # Celdas dentro de tablero
-        # self.tab_celdas = [[Celda(cel_valor=np.random.randint(tab_min, tab_max), cel_posicion=(i, j))
-        #                     for j in range(tab_dims)] for i in range(tab_dims)]
         self.tab_celdas = [[Celda(cel_valor=np.random.randint(tab_min, tab_max), cel_posicion=(i, j))
                             for i in range(tab_dims)] for j in range(tab_dims)]
 
@@ -195,7 +214,7 @@ class Tablero(object):
             return False
 
         # Validacion 2 = Celda no esta ocupada
-        if self.tab_celdas[x][y].cel_visitada:
+        if self.tab_celdas[y][x].cel_visitada:
             return {'validez': False, 'posicion': None}
         else:
             return {'validez': True, 'posicion': [x, y]}
@@ -217,8 +236,8 @@ class Tablero(object):
             # print('valor de la celda destino: ' + str(juego_tablero.tab_celdas[y][x].cel_valor))
 
             # Actualizar posicion de jugador
-            juego_tablero.tab_jugadores[mov_jg].jug_posicion[0] = y
-            juego_tablero.tab_jugadores[mov_jg].jug_posicion[1] = x
+            juego_tablero.tab_jugadores[mov_jg].jug_posicion[0] = x
+            juego_tablero.tab_jugadores[mov_jg].jug_posicion[1] = y
             # Actualizar el Controlador de la celda
             juego_tablero.tab_celdas[y][x].cel_controlador = juego_tablero.tab_jugadores[jugador].jug_nombre
             # Actualizar Simbolo en celda
@@ -273,18 +292,6 @@ class Celda(object):
             else:
                 return f' 0{ self.cel_valor } '
 
-# Validar
-# input_usuario()
-# mientras no ocurra termino
-# mostrar tablero
-# pedir entrada de jugador
-# validar que sea entreada valida
-# mover jugador actualizando tablero
-# mostrar tablero actualizado
-# calcular entrada cpu
-# mover jugador actualizando tablero
-# mostrar tablero actualizado
-
 
 # -- ------------------------------------------------------------------------------------------------ Seccion Main -- #
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -293,49 +300,51 @@ if __name__ == '__main__':
 
     # -- -------------------------------------------------------------------------------- Inicializacion del juego -- #
     # Mensaje de bienvenida
-    input('\n \nSkynet: ¿Estás listo? \n')
-    time.sleep(0.5)
+    # input('\n \nSkynet: ¿Estás listo? \n')
+    # time.sleep(0.5)
 
     # solicitar Dificultad
-    in_dif = int(input("Elige dificultad | 3 = 'facil', '5 = 'dificil: "))
-    # in_dif = 3
+    # in_dif = int(input("Elige dificultad | 3 = 'facil', '5 = 'dificil: "))
+    in_dif = 3
 
     # solicitar min para aleatorios
-    in_min = int(input("Ingresa el numero mínimo para aleatorios (entero > 0): "))
-    # in_min = 1
+    # in_min = int(input("Ingresa el numero mínimo para aleatorios (entero > 0): "))
+    in_min = 1
 
     # solicitar max para aleatorios
-    in_max = int(input("Ingresa el numero máximo para aleatorios (entero > 0): "))
-    # in_max = 20
+    # in_max = int(input("Ingresa el numero máximo para aleatorios (entero > 0): "))
+    in_max = 20
 
     # solicitar tamaño de matriz
-    in_mat = int(input("Ingresa el valor de N para la matriz N x N (entero > 2): "))
-    # in_mat = 8
+    # in_mat = int(input("Ingresa el valor de N para la matriz N x N (entero > 2): "))
+    in_mat = 8
 
     # solicitar nombre de jugador
-    in_nom = str(input("Ingresa el nombre del jugador: "))
-    # in_nom = 'jugador'
+    # in_nom = str(input("Ingresa el nombre del jugador: "))
+    in_nom = 'john connor'
 
     # Dinamica John Connor
-    loading = 'John Connor'
-    time.sleep(2)
-    print('\nBuen intento ...\n')
-    time.sleep(2)
-    for i in range(11):
-        print(loading[i], sep='', end=' ', flush=True)
-        time.sleep(0.25)
-
-    # imprimir mensaje de inicio
-    time.sleep(2.5)
-    print("\n \n ................ Dia del Juicio Final ................ ")
-    time.sleep(1.5)
+    # loading = 'John Connor'
+    # time.sleep(2)
+    # print('\nBuen intento ...\n')
+    # time.sleep(2)
+    # for i in range(11):
+    #     print(loading[i], sep='', end=' ', flush=True)
+    #     time.sleep(0.25)
+    #
+    # # imprimir mensaje de inicio
+    # time.sleep(2.5)
+    # print("\n \n ................ Dia del Juicio Final ................ ")
+    # time.sleep(1.5)
 
     juego_tablero = inicializar()
 
-    # Imprimir tablero
+    # Imprimir tablero inicial
     print(juego_tablero)
     print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
     print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
+    print('Score: ' + str(juego_tablero.tab_score))
+
     time.sleep(1)
 
     # -- ------------------------------------------------------------------------------------------ Ciclo de juego -- #
