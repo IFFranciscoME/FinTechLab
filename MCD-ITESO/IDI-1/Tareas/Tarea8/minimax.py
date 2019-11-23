@@ -7,12 +7,13 @@
 
 import numpy as np
 import time
+from collections import deque as queue
 
 
 # -- ------------------------------------------------------------------------- Funcion Global : Entrada de usuario -- #
 # ------------------------------------------------------------------------------------------------------------------- #
 
-def jugar():
+def gen_jugar():
     jugador = 1
     # While con bandera de si el juego termino
     while juego_tablero.mov_disponibles(jugador):
@@ -20,16 +21,15 @@ def jugar():
         # -- ---------------------------------------------------------------------------------- Movimiento PERSONA -- #
 
         # -- Validar movimiento aceptado (Dentro de tablero)
-
         # Solicitar movimiento a jugador
-        jg_mov = input_usuario()
+        jg_mov = gen_entrada_usuario()
 
         # Ciclo infinito de pregunta por movimiento hasta que ingrese uno válido
         while not juego_tablero.mov_tablero(jugador, jg_mov):
 
-            print('movimiento no valido')
+            print(' *** movimiento no valido *** ')
             # Solicitar movimiento a jugador
-            jg_mov = input_usuario()
+            jg_mov = gen_entrada_usuario()
 
         # Regresa coordenadas de movimiento valido por tablero
         x, y = juego_tablero.mov_tablero(mov_jg=1, mov_dir=jg_mov)
@@ -37,15 +37,8 @@ def jugar():
         # Actualizar celda destino con movimiento de jugador
         juego_tablero.realizar_mov(mov_jg=1, x=x, y=y)
 
-        # Validar que existan movimientos disponibles
-        # mov_disp = juego.tablero.mov_disp(mov_jg=1)
-        # if not mov_disp:
-        # print('\nDia del juicio final ...')
-        # print(juego_tablero)
-        # print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
-        # print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
-        # print('Score: ' + str(juego_tablero.tab_score))
-        # break
+        # Actualizar el score de tablero
+        juego_tablero.tab_score = juego_tablero.tab_jugadores[0].jug_puntos - juego_tablero.tab_jugadores[1].jug_puntos
 
         print(juego_tablero)
         print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
@@ -53,14 +46,25 @@ def jugar():
         print('Score: ' + str(juego_tablero.tab_score))
 
         # -- -------------------------------------------------------------------------------------- Movimiento CPU -- #
+
         # Mostrar mensaje que cpu esta moviendo
         print('\nSkynet moviendo: ')
 
         # Calcular movimiento a cpu
-        time.sleep(.5)
+        movimiento_cpu = mov_cpu()
 
-        # Actualizar celda destino con movimiento de cpu
-        juego_tablero.realizar_mov(mov_jg=0, x=0, y=2)
+        # Si ya no hay movimientos disponibles para cpu, se termina el juego
+        if not movimiento_cpu:
+            break
+
+        # Regresa coordenadas de movimiento valido por tablero
+        x, y = juego_tablero.mov_tablero(mov_jg=0, mov_dir=movimiento_cpu)
+
+        # Actualizar celda destino con movimiento de jugador
+        juego_tablero.realizar_mov(mov_jg=0, x=x, y=y)
+
+        # Actualizar el score de tablero
+        juego_tablero.tab_score = juego_tablero.tab_jugadores[0].jug_puntos - juego_tablero.tab_jugadores[1].jug_puntos
 
         # Imprimir tablero y marcadores
         print(juego_tablero)
@@ -76,7 +80,9 @@ def jugar():
 # -- -------------------------------------------------------------------------- Funcion Global : Inicializar Juego -- #
 # ------------------------------------------------------------------------------------------------------------------- #
 
-def inicializar():
+def gen_inicializar():
+    # Semilla para reproducibilidad
+    np.random.seed(10)
     # Jugador CPU
     jug_0 = Jugador(jug_posicion=[0, 0], jug_iscpu=True, jug_ismax=True, jug_nombre='skynet', jug_simbolo='*')
     # Jugador Humano
@@ -111,8 +117,12 @@ def inicializar():
     jg_tablero.tab_jugadores[1].jug_posicion[1] = 7
     # Puntos del jugador
     jg_tablero.tab_jugadores[1].jug_puntos = jg_tablero.tab_celdas[7][7].cel_valor
+
+    # -- ------------------------------------------------------------------------------------- Inicializar TABLERO -- #
     # Inicializar Score de Tablero (Skynet - John Connor)
     jg_tablero.tab_score = jg_tablero.tab_jugadores[0].jug_puntos - jg_tablero.tab_jugadores[1].jug_puntos
+    # Inicializar turno en Tablero
+    jg_tablero.tab_turno = 1  # 0 = Skynet, 1 = John Connor
 
     return jg_tablero
 
@@ -120,7 +130,7 @@ def inicializar():
 # -- ------------------------------------------------------------------------ Funcion Global : Dia de Juicio Final -- #
 # ------------------------------------------------------------------------------------------------------------------- #
 
-def juicio_final():
+def gen_juicio_final():
 
     d1 = '\nAgosto 4, 1997 : Cyberdine activa al protocolo Skynet'
     time.sleep(1)
@@ -137,10 +147,11 @@ def juicio_final():
     # time.sleep(0.25)
     # d5 = ' ... llamada entrante '
 
+
 # -- ------------------------------------------------------------------------- Funcion Global : Entrada de usuario -- #
 # ------------------------------------------------------------------------------------------------------------------- #
 
-def input_usuario():
+def gen_entrada_usuario():
 
     print('')
     print("----------------- ¿A dónde vas a mover? ----------------- ")
@@ -159,11 +170,23 @@ def input_usuario():
     else:
         time.sleep(1)
         print(" \n ")
-        print("** Movimiento no valido, intenta de nuevo ** ")
+        print("** los movimientos validos son 1, 2, 3, 4, intenta de nuevo ** ")
         print(" \n ")
         time.sleep(1)
 
-        return input_usuario()
+        return gen_entrada_usuario()
+
+
+# -- ------------------------------------------------------------------------ Funcion Global : Movimiento para CPU -- #
+# ------------------------------------------------------------------------------------------------------------------- #
+
+def mov_cpu():
+
+    movimientos = juego_tablero.mov_disponibles(0)
+    if movimientos:
+        return movimientos[0]
+    else:
+        return False
 
 
 # -- ---------------------------------------------------------------------------------------------- Clase: Tablero -- #
@@ -212,7 +235,9 @@ class Tablero(object):
         self.tab_jugadores = tab_jugs
         # Celdas dentro de tablero
         self.tab_celdas = [[Celda(cel_valor=np.random.randint(tab_min, tab_max), cel_posicion=(i, j))
-                            for i in range(tab_dims)] for j in range(tab_dims)]
+                            for j in range(tab_dims)] for i in range(tab_dims)]
+        # Turno actualizado en el tablero
+        self.tab_turno = None
 
     def __str__(self):
         res = '\n'
@@ -249,35 +274,15 @@ class Tablero(object):
             return False
 
         # Validacion 2: que la celda no este visitada
-        if not self.tab_celdas[y][x].cel_visitada:
+        if not self.tab_celdas[x][y].cel_visitada:
             return x, y
 
     # Para validar si hay movimientos permitidos
     def mov_disponibles(self, mov_jg):
-
-        # Validar que exista movimiento dentro de tablero & la celda no este ocupada (que ambos sean True)
-        # probar hacia arriba
-        # x, y = self.mov_tablero(mov_jg, 'arriba')
-        if self.mov_tablero(mov_jg, 'arriba'):
-            return True
-
-        # probar hacia derecha
-        # x, y = self.mov_tablero(mov_jg, 'derecha')
-        if self.mov_tablero(mov_jg, 'derecha'):
-            return True
-
-        # probar hacia abajo
-        # x, y = self.mov_tablero(mov_jg, 'abajo')
-        if self.mov_tablero(mov_jg, 'abajo'):
-            return True
-
-        # probar hacia izquierda
-        # x, y = self.mov_tablero(mov_jg, 'izquierda')
-        if self.mov_tablero(mov_jg, 'izquierda'):
-            return True
-
-        else:
-            return False
+        movimientos = ['arriba', 'derecha', 'abajo', 'izquierda']
+        lista = [self.mov_tablero(mov_jg, i) for i in movimientos]
+        lista_n = [i for i, e in enumerate(lista) if e != 0]
+        return [movimientos[i] for i in lista_n]
 
     # Realizar un movimiento en el tablero
     def realizar_mov(self, mov_jg, x, y):
@@ -292,7 +297,6 @@ class Tablero(object):
         self.tab_celdas[y][x].cel_visitada = True
         # Actualizar score de tablero
         self.tab_jugadores[mov_jg].jug_puntos += self.tab_celdas[y][x].cel_valor
-        # print('puntos ganados: ' + str(juego_tablero.tab_jugadores[jugador].jug_puntos))
 
 
 # -- ------------------------------------------------------------------------------------------------ Clase: Celda -- #
@@ -339,8 +343,59 @@ class Celda(object):
                 return f' 0{ self.cel_valor } '
 
 
+# -- ------------------------------------------------------------------------------------------------- Clase: Nodo -- #
+# ------------------------------------------------------------------------------------------------------------------- #
+
+class Nodo:
+    def __init__(self, valor, ismax=True, izquierda=None, derecha=None, arriba=None, abajo=None):
+        # valor del nodo (con el score del tablero)
+        self.valor = valor
+        # hijo hacia arriba (si es que existe movimiento valido hacia arriba)
+        self.arriba = arriba
+        # hijo hacia derecha (si es que existe movimiento valido hacia derecha)
+        self.derecha = derecha
+        # hijo hacia abajo (si es que existe movimiento valido hacia abajo)
+        self.abajo = abajo
+        # hijo hacia izquierda (si es que existe movimiento valido hacia izquierda)
+        self.izquierda = izquierda
+        # si es max o no
+        self.ismax = ismax
+
+
+# -- ------------------------------------------------------------------------------------------------ Clase: Arbol -- #
+# ------------------------------------------------------------------------------------------------------------------- #
+
+class Arbol:
+    def __init__(self, valor=None, profundidad=None):
+        self.nodo = Nodo(valor)
+        self.profundidad = profundidad
+
+    # Funcion para crear el arbol minimax segun profundidad deseada
+    def generateminimax(self, values):
+        aux = queue()
+        current = self.nodo
+        counter = 1
+        for val in values:
+            level = np.floor(np.log2(counter)) + 1
+            ismax = level % 2 == 0
+            if not current.valor:
+                current.valor = val
+                current.ismax = ismax
+            elif not current.arriba:
+                current.arriba = Nodo(val, ismax=ismax)
+                aux.put(current.arriba)
+            elif not current.derecha:
+                current.derecha = Nodo(val, ismax=ismax)
+                aux.put(current.derecha)
+                current = aux.get()
+            counter = counter + 1
+
+# juego_arbol = Arbol(profundidad=3)
+# juego_arbol.minimax()
+
 # -- ------------------------------------------------------------------------------------------------ Seccion Main -- #
 # ------------------------------------------------------------------------------------------------------------------- #
+
 
 if __name__ == '__main__':
 
@@ -383,7 +438,7 @@ if __name__ == '__main__':
     # print("\n \n ................ Dia del Juicio Final ................ ")
     # time.sleep(1.5)
 
-    juego_tablero = inicializar()
+    juego_tablero = gen_inicializar()
 
     # Imprimir tablero inicial
     print(juego_tablero)
@@ -396,7 +451,7 @@ if __name__ == '__main__':
     # -- ------------------------------------------------------------------------------------------ Ciclo de juego -- #
 
     # Funcion jugar
-    jugar()
+    gen_jugar()
 
-    juicio_final()
+    gen_juicio_final()
 
