@@ -19,6 +19,10 @@ def gen_jugar():
 
         # -- ---------------------------------------------------------------------------------- Movimiento PERSONA -- #
 
+        # Mostrar mensaje que cpu esta moviendo
+        print('\n john connor moviendo: ')
+        time.sleep(2)
+
         # -- Validar movimiento aceptado (Dentro de tablero)
         # Obtener movimiento a jugador
         # jg_mov = gen_entrada_usuario()
@@ -39,11 +43,14 @@ def gen_jugar():
         print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
         print('Score: ' + str(juego_tablero.tab_score))
 
+        # resetear score para minimax
+        juego_tablero.tab_score_minimax = 0
+
         # -- -------------------------------------------------------------------------------------- Movimiento CPU -- #
 
         # Mostrar mensaje que cpu esta moviendo
         print('\nSkynet moviendo: ')
-        time.sleep(.5)
+        time.sleep(2)
 
         # Si ya no hay movimientos disponibles para cpu, se termina el juego
         if not mov_cpu():
@@ -61,7 +68,8 @@ def gen_jugar():
         print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
         print('Score: ' + str(juego_tablero.tab_score))
 
-        # Repetir proceso mientras no haya un Break en el while
+        # resetear score para minimax
+        juego_tablero.tab_score_minimax = 0
 
     return True
 
@@ -71,7 +79,7 @@ def gen_jugar():
 
 def gen_inicializar():
     # Semilla para reproducibilidad
-    np.random.seed(10)
+    # np.random.seed(10)
     # Jugador CPU
     jug_0 = Jugador(jug_posicion=[0, 0], jug_iscpu=True, jug_ismax=True, jug_nombre='skynet', jug_simbolo='*')
     # Jugador Humano
@@ -142,6 +150,7 @@ def gen_juicio_final():
 def gen_hay_esperanza():
 
     return print('\n Gano la humanidad')
+
 
 # -- ------------------------------------------------------------------------- Funcion Global : Entrada de usuario -- #
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -270,6 +279,10 @@ class Tablero(object):
 
         # Validacion 2: que la celda no este visitada
         if not self.tab_celdas[y][x].cel_visitada:
+            if mov_jg == 0:
+                self.tab_score_minimax = self.tab_score_minimax + self.tab_celdas[y][x].cel_valor
+            else:
+                self.tab_score_minimax = self.tab_score_minimax - self.tab_celdas[y][x].cel_valor
             return True
 
     # Para validar si hay movimientos permitidos
@@ -347,10 +360,11 @@ class Tablero(object):
                     alfa = val
                 if alfa >= beta:
                     return beta, 'izquierda'
+
         else:
             if self.mov_valido(mov_jg=1, mov_dir='arriba'):  # para validar que existe y que regrese score
                 val, movimiento = self.minimax(prof - 1, alfa, beta, True)
-                if beta < val:
+                if beta > val:
                     beta = val
                 if beta <= alfa:
                     return alfa, 'arriba'
@@ -376,7 +390,7 @@ class Tablero(object):
                 if beta <= alfa:
                     return alfa, 'izquierda'
 
-        return alfa, 'arriba'
+        return beta, 'arriba'
 
 
 # -- ------------------------------------------------------------------------------------------------ Clase: Celda -- #
@@ -435,7 +449,7 @@ if __name__ == '__main__':
 
     # solicitar Dificultad
     # in_dif = int(input("Elige dificultad | 3 = 'facil', '5 = 'dificil: "))
-    in_dif = 5
+    in_dif = 3
 
     # solicitar min para aleatorios
     # in_min = int(input("Ingresa el numero mínimo para aleatorios (entero > 0): "))
@@ -443,11 +457,11 @@ if __name__ == '__main__':
 
     # solicitar max para aleatorios
     # in_max = int(input("Ingresa el numero máximo para aleatorios (entero > 0): "))
-    in_max = 20
+    in_max = 15
 
     # solicitar tamaño de matriz
     # in_mat = int(input("Ingresa el valor de N para la matriz N x N (entero > 2): "))
-    in_mat = 4
+    in_mat = 8
 
     # solicitar nombre de jugador
     # in_nom = str(input("Ingresa el nombre del jugador: "))
