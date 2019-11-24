@@ -43,7 +43,7 @@ def gen_jugar():
 
         # Mostrar mensaje que cpu esta moviendo
         print('\nSkynet moviendo: ')
-        time.sleep(1.5)
+        time.sleep(.5)
 
         # Si ya no hay movimientos disponibles para cpu, se termina el juego
         if not mov_cpu():
@@ -135,6 +135,13 @@ def gen_juicio_final():
         print(d4[i], sep='', end=' ', flush=True)
     print('\n ... ')
 
+
+# -- ------------------------------------------------------------------------------ Funcion Global : Final Alterno -- #
+# ------------------------------------------------------------------------------------------------------------------- #
+
+def gen_hay_esperanza():
+
+    return print('\n Gano la humanidad')
 
 # -- ------------------------------------------------------------------------- Funcion Global : Entrada de usuario -- #
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -269,7 +276,7 @@ class Tablero(object):
     def mov_disponibles(self, mov_jg):
         movimientos = ['arriba', 'derecha', 'abajo', 'izquierda']
         lista = [self.mov_valido(mov_jg, i) for i in movimientos]
-        lista_n = [i for i, e in enumerate(lista) if e != 0]
+        lista_n = [i for i, e in enumerate(lista) if e == 1]
         return [movimientos[i] for i in lista_n]
 
     # Realizar un movimiento en el tablero
@@ -474,5 +481,8 @@ if __name__ == '__main__':
     # Funcion jugar
     gen_jugar()
 
-    gen_juicio_final()
-
+    # Mensaje final de juego
+    if juego_tablero.tab_score > 0:
+        gen_juicio_final()
+    else:
+        gen_hay_esperanza()
