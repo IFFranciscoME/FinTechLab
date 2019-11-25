@@ -1,36 +1,40 @@
 
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 # -- Proyecto: Juego de Trazo Maximo con Inteligencia Artificial (Minimax)                                         -- #
-# -- Repositorio:                                                                                                  -- #
-# -- FranciscoME                                                                                                   -- #
+# -- Repositorio: https://github.com/IFFranciscoME/FinTechLab/blob/master/MCD-ITESO/IDI-1/Tareas/Tarea8/minimax.py -- #
+# -- Autor: FranciscoME                                                                                            -- #
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
-import numpy as np
-import time
+# Importar librerias
+import numpy as np  # funciones numericas
+import time         # retardos de tiempo
+import os           # para limpiar la consola
 
 
 # -- ------------------------------------------------------------------------- Funcion Global : Entrada de usuario -- #
 # ------------------------------------------------------------------------------------------------------------------- #
 
 def gen_jugar():
-    jugador = 1
     # While con bandera de si el juego termino
-    while juego_tablero.mov_disponibles(jugador):
+    while juego_tablero.mov_disponibles(mov_jg=1):
 
         # -- ---------------------------------------------------------------------------------- Movimiento PERSONA -- #
 
         # Mostrar mensaje que cpu esta moviendo
         print('\n john connor moviendo: ')
-        time.sleep(2)
+        time.sleep(.2)
 
         # -- Validar movimiento aceptado (Dentro de tablero)
         # Obtener movimiento a jugador
-        # jg_mov = gen_entrada_usuario()
-        jg_mov = 'izquierda'
+        jg_mov = gen_entrada_usuario()
+        # jg_mov = 'arriba'
+
+        # rendirse
+        if jg_mov == 'rendirse':
+            break
 
         # Ciclo infinito de pregunta por movimiento hasta que ingrese uno válido
-        while not juego_tablero.mov_valido(jugador, jg_mov):
-
+        while not juego_tablero.mov_valido(mov_jg=1, mov_dir=jg_mov):
             print(' *** movimiento no valido *** ')
             # Solicitar movimiento a jugador
             jg_mov = gen_entrada_usuario()
@@ -43,21 +47,21 @@ def gen_jugar():
         print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
         print('Score: ' + str(juego_tablero.tab_score))
 
-        # resetear score para minimax
-        juego_tablero.tab_score_minimax = 0
-
         # -- -------------------------------------------------------------------------------------- Movimiento CPU -- #
 
         # Mostrar mensaje que cpu esta moviendo
         print('\nSkynet moviendo: ')
-        time.sleep(2)
+        time.sleep(.2)
 
         # Si ya no hay movimientos disponibles para cpu, se termina el juego
-        if not mov_cpu():
+        if not juego_tablero.mov_disponibles(mov_jg=0):
             break
 
+        # resetear score para minimax
+        juego_tablero.tab_score_minimax = 0
+
         # Obtener movimiento para CPU
-        valor, movimiento_cpu = juego_tablero.minimax(prof=in_dif, alfa=float("inf"), beta=float("-inf"), ismax=True)
+        valor, movimiento_cpu = juego_tablero.minimax(prof=in_dif, alfa=float("-inf"), beta=float("inf"), ismax=True)
 
         # Actualizar celda destino con movimiento de jugador
         juego_tablero.realizar_mov(mov_jg=0, mov_dir=movimiento_cpu)
@@ -68,9 +72,6 @@ def gen_jugar():
         print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
         print('Score: ' + str(juego_tablero.tab_score))
 
-        # resetear score para minimax
-        juego_tablero.tab_score_minimax = 0
-
     return True
 
 
@@ -79,7 +80,7 @@ def gen_jugar():
 
 def gen_inicializar():
     # Semilla para reproducibilidad
-    # np.random.seed(10)
+    np.random.seed(10)
     # Jugador CPU
     jug_0 = Jugador(jug_posicion=[0, 0], jug_iscpu=True, jug_ismax=True, jug_nombre='skynet', jug_simbolo='*')
     # Jugador Humano
@@ -127,21 +128,32 @@ def gen_inicializar():
 
 def gen_juicio_final():
 
-    d1 = '\nAgosto 4, 1997 : Cyberdine activa al protocolo Skynet'
-    for i in range(31):
-        print(d1[i], sep='', end=' ', flush=True)
-    time.sleep(0.25)
-    d2 = '\nAgosto 29, 1997 : 02:14:00 EST Skynet se vuelve autoconciente'
-    for i in range(31):
-        print(d2[i], sep='', end=' ', flush=True)
-    time.sleep(0.25)
-    d3 = '\nAgosto 29, 1997 : 02:14:01 EST Skynet lanza cohetes nucleares a Rusia'
-    for i in range(31):
-        print(d3[i], sep='', end=' ', flush=True)
-    d4 = '\nSkynet incita un contra ataque contra los humanos, quienes, en panico, tratan de desconectarla'
-    for i in range(31):
-        print(d4[i], sep='', end=' ', flush=True)
-    print('\n ... ')
+    d1 = '\nAgosto 4, 1997 : 00:00:00 EST, Cyberdine activa al protocolo Skynet.'
+    for a in range(68):
+        print(d1[a], sep='', end='', flush=True)
+        time.sleep(0.09)
+
+    time.sleep(0.95)
+    d2 = '\nAgosto 29, 1997 - 02:14:00 EST, Skynet se vuelve autoconciente.'
+    for b in range(63):
+        print(d2[b], sep='', end='', flush=True)
+        time.sleep(0.05)
+
+    time.sleep(0.95)
+    d3 = '\nAgosto 29, 1997 02:14:01 EST, Skynet lanza cohetes nucleares a Rusia.'
+    for c in range(69):
+        print(d3[c], sep='', end='', flush=True)
+        time.sleep(0.05)
+
+    time.sleep(0.95)
+    d4 = '\nAgosto 29, 1997 02:15:01 EST, Skynet incita un contra ataque contra los humanos, quienes,' \
+         ' en panico, tratan de desconectarla.'
+    for d in range(125):
+        print(d4[d], sep='', end='', flush=True)
+        time.sleep(0.05)
+
+    time.sleep(2)
+    print('\n\n ... Nos morimos ')
 
 
 # -- ------------------------------------------------------------------------------ Funcion Global : Final Alterno -- #
@@ -158,9 +170,9 @@ def gen_hay_esperanza():
 def gen_entrada_usuario():
 
     print('')
-    print("----------------- ¿A dónde vas a mover? ----------------- ")
-    print("---------- ------------------------------ --------------- ")
-    print("  1 = arriba, 2 = derecha, 3 = abajo, 4 = izquierda       ")
+    print("----------------------- ¿A dónde vas a mover? -------------------- ")
+    print("------------------ ------------------------------ ---------------- ")
+    print("  1 = arriba, 2 = derecha, 3 = abajo, 4 = izquierda, 5 = rendirse  ")
     in_mov = int(input("\nMovimiento: "))
 
     if in_mov == 1:
@@ -171,6 +183,8 @@ def gen_entrada_usuario():
         return 'abajo'
     elif in_mov == 4:
         return 'izquierda'
+    elif in_mov == 5:
+        return 'rendirse'
     else:
         time.sleep(1)
         print(" \n ")
@@ -181,26 +195,19 @@ def gen_entrada_usuario():
         return gen_entrada_usuario()
 
 
-# -- ------------------------------------------------------------------------ Funcion Global : Movimiento para CPU -- #
-# ------------------------------------------------------------------------------------------------------------------- #
-
-def mov_cpu():
-
-    movimientos = juego_tablero.mov_disponibles(0)
-    if movimientos:
-        return movimientos[0]
-    else:
-        return False
-
-
-# -- ---------------------------------------------------------------------------------------------- Clase: Tablero -- #
+# -- ---------------------------------------------------------------------------------------------- Clase: Jugador -- #
 # ------------------------------------------------------------------------------------------------------------------- #
 
 class Jugador(object):
+
+    # constructor de clase Jugador
     def __init__(self, jug_posicion, jug_iscpu, jug_ismax=None, jug_nombre=None, jug_simbolo=None):
         """
         :param jug_posicion: list : [1, 2] : posicion en el tablero del jugador
         :param jug_iscpu: bool : True/False : bandera si el jugador es cpu (si no es cpu es humano)
+        :param jug_ismax: bool : True/False : bandera si el jugador es maximizador o no (seria minimizador)
+        :param jug_nombre: str : 'nombre' : nombre del jugador que aparece en consola
+        :param jug_simbolo:  str : '#, *' : simbolo del jugador para imprimir en el tablero
         """
         # Inicializar la posicion en el tablero del jugador
         self.jug_posicion = jug_posicion
@@ -223,8 +230,16 @@ class Jugador(object):
 
 class Tablero(object):
 
-    # Inicializar el tablero
+    # Constructor de clase Tablero
     def __init__(self, tab_score, tab_dims, tab_min, tab_max, tab_dif, tab_jugs):
+        """
+        :param tab_score: int : [0, n] : score del tablero (resta de los scores jugador 0 - jugador 1)
+        :param tab_dims: int : n : la cantidad de renglones y filas para la matriz [N, N]
+        :param tab_min: int : n : el numero minimo para la generacion de aleatorios
+        :param tab_max: int : n : el numero maximo para la generacion de aleatorios
+        :param tab_dif: int : [3, 5] : el nivel de profundidad del minimax como nivel de dificultad para el humano
+        :param tab_jugs: list : class : lista de clases Jugador para representar jugadores en el tablero,
+        """
         # El score del tablero
         self.tab_score = tab_score
         # El tamaño del tablero [8, 8]
@@ -243,19 +258,30 @@ class Tablero(object):
         # Score para minimax
         self.tab_score_minimax = 0
 
+    # Imprimir tablero en consola
     def __str__(self):
+        """
+        :return: res : str : cadena de caracteres para imprimir tablero en consola
+        """
         res = '\n'
-        # Filas
+        # Construccion de filas
         for k in range(len(self.tab_celdas)):
-            # Columnas
+            # separador de columnas
             res += '|'
+            # Construccion de columnas
             for j in range(len(self.tab_celdas)):
                 res += f'{self.tab_celdas[k][j]}|'
+            # Salto de renglon al terminar de construir columnas
             res += '\n'
         return res
 
-    # Para validar un movimiento dentro del tablero
+    # Validar que un movimiento, para un jugador dado, sea valido
     def mov_valido(self, mov_jg, mov_dir):
+        """
+        :param mov_jg: int : [0, 1] : indicativo de jugador, 0 = CPU, 1 = Persona
+        :param mov_dir: str : ' ' : indicativo de movimiento, 'arriba', 'derecha', 'abajo', 'izquierda'
+        :return: bool : True si el movimiento es valido, False si el movimiento no es valido
+        """
 
         # Solicitar posicion actual de jugador elegido
         x = self.tab_jugadores[mov_jg].jug_posicion[0]
@@ -277,29 +303,41 @@ class Tablero(object):
         else:
             return False
 
-        # Validacion 2: que la celda no este visitada
+        # Validacion 2 = celda no visitada
         if not self.tab_celdas[y][x].cel_visitada:
+            # Si el CPU es quien movio, jugador maximizador, se le suman los puntos de la cela al score minimax
             if mov_jg == 0:
                 self.tab_score_minimax = self.tab_score_minimax + self.tab_celdas[y][x].cel_valor
+            # Si la Persona es quien movio, jugador minimizador, se le suman los puntos de la cela al score minimax
             else:
                 self.tab_score_minimax = self.tab_score_minimax - self.tab_celdas[y][x].cel_valor
             return True
 
-    # Para validar si hay movimientos permitidos
+    # Validar si hay por lo menos 1 movimiento permitido en el tablero para el jugador consultado
     def mov_disponibles(self, mov_jg):
+        """
+        :param mov_jg: int : [0, 1] : indicativo de jugador, 0 = CPU, 1 = Persona
+        :return: bool : True si hay movimientos validos disponibles, False si no hay movimientos validos disponibles
+        """
         movimientos = ['arriba', 'derecha', 'abajo', 'izquierda']
-        lista = [self.mov_valido(mov_jg, i) for i in movimientos]
-        lista_n = [i for i, e in enumerate(lista) if e == 1]
-        return [movimientos[i] for i in lista_n]
+        lista = [self.mov_valido(mov_jg, l) for l in movimientos]
+        return True in lista
 
     # Realizar un movimiento en el tablero
     def realizar_mov(self, mov_jg, mov_dir):
+        """
+        :param mov_jg: int : [0, 1] : indicativo de jugador, 0 = CPU, 1 = Persona
+        :param mov_dir: str : ' ' : indicativo de movimiento, 'arriba', 'derecha', 'abajo', 'izquierda'
+        :return:
+        """
 
         # Solicitar posicion actual de jugador elegido
+        # componente x de la posicion
         x = self.tab_jugadores[mov_jg].jug_posicion[0]
+        # componente y de la posicion
         y = self.tab_jugadores[mov_jg].jug_posicion[1]
 
-        # Validacion 1 = Movimiento dentro del tablero
+        # Obtener nuevas coordenadas segun el movimiento solicitado
         if mov_dir == 'arriba' and 0 <= y - 1 <= 7:
             x = x
             y = y - 1
@@ -322,74 +360,72 @@ class Tablero(object):
         self.tab_celdas[y][x].cel_simbolo = self.tab_jugadores[mov_jg].jug_simbolo
         # Actualizar que Celda esta visitada
         self.tab_celdas[y][x].cel_visitada = True
-        # Actualizar score de tablero
+        # Actualizar puntos del jugador en el tablero
         self.tab_jugadores[mov_jg].jug_puntos += self.tab_celdas[y][x].cel_valor
         # Actualizar el score de tablero
         juego_tablero.tab_score = juego_tablero.tab_jugadores[0].jug_puntos - juego_tablero.tab_jugadores[1].jug_puntos
 
     # Funcion para crear el arbol minimax segun profundidad deseada
     def minimax(self, prof, alfa, beta, ismax):
+        """
+        :param prof: int : [3, 5] : profundidad de busqueda en el arbol (equivalente a la difucultad del juego)
+        :param alfa: float : float("-inf") : representacion de -infinito, para la poda del arbol (alfa)
+        :param beta: float : float("-inf") : representacion de +infinito, para la poda del arbol (beta)
+        :param ismax: bool : True/False : si el jugador es maximizador o minimizador
+        :return: int/str : resultado del arbol minimax, score del tablero calculado / movimiento en el tablero calculado
+        """
         if prof == 0:
             return self.tab_score_minimax, 'arriba'
-
         if ismax:
-            if self.mov_valido(mov_jg=0, mov_dir='arriba'):  # para validar que existe y que regrese score
+            if self.mov_valido(mov_jg=0, mov_dir='arriba'):
                 val, movimiento = self.minimax(prof - 1, alfa, beta, False)
-                if alfa > val:
+                if alfa < val:
                     alfa = val
                 if alfa >= beta:
                     return beta, 'arriba'
-
             if self.mov_valido(mov_jg=0, mov_dir='derecha'):
                 val, movimiento = self.minimax(prof - 1, alfa, beta, False)
-                if alfa > val:
+                if alfa < val:
                     alfa = val
                 if alfa >= beta:
                     return beta, 'derecha'
-
             if self.mov_valido(mov_jg=0, mov_dir='abajo'):
                 val, movimiento = self.minimax(prof - 1, alfa, beta, False)
-                if alfa > val:
+                if alfa < val:
                     alfa = val
                 if alfa >= beta:
                     return beta, 'abajo'
-
             if self.mov_valido(mov_jg=0, mov_dir='izquierda'):
                 val, movimiento = self.minimax(prof - 1, alfa, beta, False)
-                if alfa > val:
+                if alfa < val:
                     alfa = val
                 if alfa >= beta:
                     return beta, 'izquierda'
-
         else:
-            if self.mov_valido(mov_jg=1, mov_dir='arriba'):  # para validar que existe y que regrese score
+            if self.mov_valido(mov_jg=1, mov_dir='arriba'):
                 val, movimiento = self.minimax(prof - 1, alfa, beta, True)
                 if beta > val:
                     beta = val
-                if beta <= alfa:
+                if alfa >= beta:
                     return alfa, 'arriba'
-
             if self.mov_valido(mov_jg=1, mov_dir='derecha'):
                 val, movimiento = self.minimax(prof - 1, alfa, beta, True)
-                if beta < val:
+                if beta > val:
                     beta = val
-                if beta <= alfa:
+                if alfa >= beta:
                     return alfa, 'derecha'
-
             if self.mov_valido(mov_jg=1, mov_dir='abajo'):
                 val, movimiento = self.minimax(prof - 1, alfa, beta, True)
-                if beta < val:
+                if beta > val:
                     beta = val
-                if beta <= alfa:
+                if alfa >= beta:
                     return alfa, 'abajo'
-
             if self.mov_valido(mov_jg=1, mov_dir='izquierda'):
                 val, movimiento = self.minimax(prof - 1, alfa, beta, True)
-                if beta < val:
+                if beta > val:
                     beta = val
-                if beta <= alfa:
+                if alfa >= beta:
                     return alfa, 'izquierda'
-
         return beta, 'arriba'
 
 
@@ -397,10 +433,11 @@ class Tablero(object):
 # ------------------------------------------------------------------------------------------------------------------- #
 
 class Celda(object):
+    # constructor de clase Celda
     def __init__(self, cel_valor, cel_posicion):
         """
-        :param cel_valor:
-        :param cel_posicion:
+        :param cel_valor: int : valor numerico que tiene la celda
+        :param cel_posicion: list : [x, y] : lista con componente x, y de la posicion de la celda en la matriz
         """
         # Valor dentro de la celda
         self.cel_valor = cel_valor
@@ -413,27 +450,37 @@ class Celda(object):
         # Para usar simbolo segun jugador en la impresion del tablero
         self.cel_simbolo = ''
 
+    # Imprimir contenido de la celda
     def __str__(self):
+        # cuando el numero sea de 2 digitos
         if len(str(self.cel_valor)) % 2 == 0:
-
+            # si la celda es del CPU
             if self.cel_controlador == juego_tablero.tab_jugadores[0].jug_nombre:
+                # imprimir simbolo + valor + simbolo
                 return f'{juego_tablero.tab_jugadores[0].jug_simbolo}{self.cel_valor}' \
                        f'{juego_tablero.tab_jugadores[0].jug_simbolo}'
-
+            # Si la celda es del jugador
             elif self.cel_controlador == juego_tablero.tab_jugadores[1].jug_nombre:
+                # imprimir simbolo + valor + simbolo
                 return f'{juego_tablero.tab_jugadores[1].jug_simbolo}{self.cel_valor}' \
                        f'{juego_tablero.tab_jugadores[1].jug_simbolo}'
             else:
+                # imprimir valor
                 return f' {self.cel_valor } '
+        # cuando el numero es de 1 digito, se agrega un 0 a la izquierda
         else:
+            # si la celda es del CPU
             if self.cel_controlador == juego_tablero.tab_jugadores[0].jug_nombre:
+                # imprimir simbolo + valor + simbolo
                 return f'{juego_tablero.tab_jugadores[0].jug_simbolo}0{self.cel_valor}' \
                        f'{juego_tablero.tab_jugadores[0].jug_simbolo}'
-
+            # si la celda es del jugador
             elif self.cel_controlador == juego_tablero.tab_jugadores[1].jug_nombre:
+                # imprimir simbolo + 0 + valor + simbolo
                 return f'{juego_tablero.tab_jugadores[1].jug_simbolo}0{self.cel_valor}' \
                        f'{juego_tablero.tab_jugadores[1].jug_simbolo}'
             else:
+                # imprimir valor
                 return f' 0{ self.cel_valor } '
 
 
@@ -442,13 +489,16 @@ class Celda(object):
 
 if __name__ == '__main__':
 
+    def cls():
+        os.system('cls' if os.name == 'nt' else 'clear')
+
     # -- -------------------------------------------------------------------------------- Inicializacion del juego -- #
     # Mensaje de bienvenida
     # input('\n \nSkynet: ¿Estás listo? \n')
     # time.sleep(0.5)
 
     # solicitar Dificultad
-    # in_dif = int(input("Elige dificultad | 3 = 'facil', '5 = 'dificil: "))
+    # in_dif = int(input("Elige dificultad (3 = 'facil', '5 = 'dificil): "))
     in_dif = 3
 
     # solicitar min para aleatorios
@@ -476,27 +526,33 @@ if __name__ == '__main__':
     #     print(loading[i], sep='', end=' ', flush=True)
     #     time.sleep(0.25)
     #
+    # cls()
     # # imprimir mensaje de inicio
     # time.sleep(2.5)
     # print("\n \n ................ Dia del Juicio Final ................ ")
     # time.sleep(1.5)
 
+    # inicializar tablero
     juego_tablero = gen_inicializar()
+
     # Imprimir tablero inicial
     print(juego_tablero)
     print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
     print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
     print('Score: ' + str(juego_tablero.tab_score))
 
+    # retardo de 1 segundo
     time.sleep(1)
 
     # -- ------------------------------------------------------------------------------------------ Ciclo de juego -- #
 
-    # Funcion jugar
+    # Ejecuta la funcion jugar (con un while dento)
     gen_jugar()
 
-    # Mensaje final de juego
+    # Validador de mensaje para final del juego
     if juego_tablero.tab_score > 0:
+        # Gano CPU
         gen_juicio_final()
     else:
+        # Gano Jugador
         gen_hay_esperanza()
