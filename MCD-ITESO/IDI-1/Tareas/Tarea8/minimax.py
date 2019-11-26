@@ -29,8 +29,9 @@ def gen_jugar():
         if not juego_tablero.mov_disponibles(mov_jg=0):
             break
 
-        # copia de tablero original para hacer uno con el minimax
+        # copia de tablero original, en direccion de memoria propia, para actualizar un tablero guia con mov de minimax
         minimax_tablero = copy.deepcopy(juego_tablero)
+
         # Obtener movimiento para CPU, utilizando tablero hipotetico
         valor, movimiento_cpu = minimax_tablero.minimax(prof=in_dif, alfa=float('-inf'), beta=float('inf'), ismax=True)
         # Actualizar celda destino con movimiento de jugador
@@ -277,9 +278,9 @@ class Tablero(object):
     # Validar que un movimiento, para un jugador dado, sea valido
     def mov_valido(self, mov_jg, mov_dir, mov_minimax):
         """
-        :param mov_minimax: bool : True/False : si es para minimax, se mueve el jugador tambien para formar el arbol
         :param mov_jg: int : [0, 1] : indicativo de jugador, 0 = CPU, 1 = Persona
         :param mov_dir: str : ' ' : indicativo de movimiento, 'arriba', 'derecha', 'abajo', 'izquierda'
+        :param mov_minimax: bool : True/False : si es para minimax, se mueve el jugador tambien paa formar el arbol
         :return: bool : True si el movimiento es valido, False si el movimiento no es valido
         """
 
@@ -322,7 +323,7 @@ class Tablero(object):
                 self.tab_jugadores[mov_jg].jug_puntos += self.tab_celdas[y][x].cel_valor
                 # Actualizar el score de tablero
                 self.tab_score = (self.tab_jugadores[0].jug_puntos - self.tab_jugadores[1].jug_puntos)
-                print(self)
+                # print(self)
 
             return True
 
@@ -391,7 +392,7 @@ class Tablero(object):
         :return: int/str : resultado del arbol minimax, score del tablero calculado / movimiento en el tablero calculado
         """
         if prof == 0:
-            return self.tab_score, ''
+            return self.tab_score, 'prof 0'
         if ismax:
             if self.mov_valido(mov_jg=0, mov_dir='arriba', mov_minimax=True):  # validar mov segun ult pos de CPU
                 val, mov = self.minimax(prof - 1, alfa, beta, False)
@@ -417,33 +418,33 @@ class Tablero(object):
                     alfa = val
                 if alfa >= beta:
                     return beta, 'izquierda'
-            return alfa, ''
+            return alfa, 'alfa max'
         else:
-            if self.mov_valido(mov_jg=1, mov_dir='arriba', mov_minimax=True):  # validar mov segun ult pos de JUGADOR
+            if self.mov_valido(mov_jg=1, mov_dir='arriba', mov_minimax=True):  # validar mov segun ult pos de JUG
                 val, mov = self.minimax(prof - 1, alfa, beta, True)
                 if beta > val:
                     beta = val
                 if alfa >= beta:
                     return alfa, 'arriba'
-            if self.mov_valido(mov_jg=1, mov_dir='derecha', mov_minimax=True):  # validar mov segun ult pos de JUGADOR
+            if self.mov_valido(mov_jg=1, mov_dir='derecha', mov_minimax=True):  # validar mov segun ult pos de JUG
                 val, mov = self.minimax(prof - 1, alfa, beta, True)
                 if beta > val:
                     beta = val
                 if alfa >= beta:
                     return alfa, 'derecha'
-            if self.mov_valido(mov_jg=1, mov_dir='abajo', mov_minimax=True):  # validar mov segun ult pos de JUGADOR
+            if self.mov_valido(mov_jg=1, mov_dir='abajo', mov_minimax=True):  # validar mov segun ult pos de JUG
                 val, mov = self.minimax(prof - 1, alfa, beta, True)
                 if beta > val:
                     beta = val
                 if alfa >= beta:
                     return alfa, 'abajo'
-            if self.mov_valido(mov_jg=1, mov_dir='izquierda', mov_minimax=True):  # validar mov segun ult pos de JUGADOR
+            if self.mov_valido(mov_jg=1, mov_dir='izquierda', mov_minimax=True):  # validar mov segun ult pos de JUG
                 val, mov = self.minimax(prof - 1, alfa, beta, True)
                 if beta > val:
                     beta = val
                 if alfa >= beta:
                     return alfa, 'izquierda'
-            return beta, ''
+        return beta, 'beta min'
 
 
 # -- ------------------------------------------------------------------------------------------------ Clase: Celda -- #
