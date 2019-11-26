@@ -31,11 +31,8 @@ def gen_jugar():
 
         # copia de tablero original para hacer uno con el minimax
         minimax_tablero = copy.deepcopy(juego_tablero)
-        # minimax_tablero = juego_tablero
-
-        # Obtener movimiento para CPU
-        valor, movimiento_cpu = minimax_tablero.minimax(prof=in_dif, alfa=float("-inf"), beta=float("inf"), ismax=True)
-
+        # Obtener movimiento para CPU, utilizando tablero hipotetico
+        valor, movimiento_cpu = minimax_tablero.minimax(prof=in_dif, alfa=float('-inf'), beta=float('inf'), ismax=True)
         # Actualizar celda destino con movimiento de jugador
         juego_tablero.realizar_mov(mov_jg=0, mov_dir=movimiento_cpu)
 
@@ -53,8 +50,8 @@ def gen_jugar():
 
         # -- Validar movimiento aceptado (Dentro de tablero)
         # Obtener movimiento a jugador
-        jg_mov = gen_entrada_usuario()
-        # jg_mov = 'arriba'
+        # jg_mov = gen_entrada_usuario()
+        jg_mov = 'izquierda'
 
         # rendirse
         if jg_mov == 'rendirse':
@@ -62,9 +59,11 @@ def gen_jugar():
 
         # Ciclo infinito de pregunta por movimiento hasta que ingrese uno válido
         while not juego_tablero.mov_valido(mov_jg=1, mov_dir=jg_mov, mov_minimax=False):
-            print(' *** movimiento no valido *** ')
+            # mensaje de error
+            print(' ### movimiento no valido ### ')
             # Solicitar movimiento a jugador
-            jg_mov = gen_entrada_usuario()
+            # jg_mov = gen_entrada_usuario()
+            jg_mov = 'arriba'
 
         # Realizar movimiento del jugador
         juego_tablero.realizar_mov(mov_jg=1, mov_dir=jg_mov)
@@ -130,7 +129,7 @@ def gen_inicializar():
 
 def gen_juicio_final():
 
-    d1 = '\nAgosto 4, 1997 : 00:00:00 EST, Cyberdine activa al protocolo Skynet.'
+    d1 = '\nAgosto 4, 1997 - 00:00:00 EST, Cyberdine activa al protocolo Skynet.'
     for a in range(68):
         print(d1[a], sep='', end='', flush=True)
         time.sleep(0.09)
@@ -142,7 +141,7 @@ def gen_juicio_final():
         time.sleep(0.05)
 
     time.sleep(0.95)
-    d3 = '\nAgosto 29, 1997 02:14:01 EST, Skynet lanza cohetes nucleares a Rusia.'
+    d3 = '\nAgosto 29, 1997 - 02:14:01 EST, Skynet lanza cohetes nucleares a Rusia.'
     for c in range(69):
         print(d3[c], sep='', end='', flush=True)
         time.sleep(0.05)
@@ -323,6 +322,8 @@ class Tablero(object):
                 self.tab_jugadores[mov_jg].jug_puntos += self.tab_celdas[y][x].cel_valor
                 # Actualizar el score de tablero
                 self.tab_score = (self.tab_jugadores[0].jug_puntos - self.tab_jugadores[1].jug_puntos)
+                print(self)
+
             return True
 
     # Validar si hay por lo menos 1 movimiento permitido en el tablero para el jugador consultado
@@ -342,6 +343,8 @@ class Tablero(object):
         :param mov_dir: str : ' ' : indicativo de movimiento, 'arriba', 'derecha', 'abajo', 'izquierda'
         :return:
         """
+
+        # self.mov_valido(mov_jg=mov_jg, mov_dir=mov_dir, mov_minimax=False)
 
         # Solicitar posicion actual de jugador elegido
         # componente x de la posicion
@@ -388,58 +391,59 @@ class Tablero(object):
         :return: int/str : resultado del arbol minimax, score del tablero calculado / movimiento en el tablero calculado
         """
         if prof == 0:
-            return self.tab_score, 'arriba'
+            return self.tab_score, ''
         if ismax:
-            if self.mov_valido(mov_jg=0, mov_dir='arriba', mov_minimax=True):
-                val, movimiento = self.minimax(prof - 1, alfa, beta, False)
+            if self.mov_valido(mov_jg=0, mov_dir='arriba', mov_minimax=True):  # validar mov segun ult pos de CPU
+                val, mov = self.minimax(prof - 1, alfa, beta, False)
                 if alfa < val:
                     alfa = val
                 if alfa >= beta:
                     return beta, 'arriba'
-            if self.mov_valido(mov_jg=0, mov_dir='derecha', mov_minimax=True):
-                val, movimiento = self.minimax(prof - 1, alfa, beta, False)
+            if self.mov_valido(mov_jg=0, mov_dir='derecha', mov_minimax=True):  # validar mov segun ult pos de CPU
+                val, mov = self.minimax(prof - 1, alfa, beta, False)
                 if alfa < val:
                     alfa = val
                 if alfa >= beta:
                     return beta, 'derecha'
-            if self.mov_valido(mov_jg=0, mov_dir='abajo', mov_minimax=True):
-                val, movimiento = self.minimax(prof - 1, alfa, beta, False)
+            if self.mov_valido(mov_jg=0, mov_dir='abajo', mov_minimax=True):  # validar mov segun ultima posicion CPU
+                val, mov = self.minimax(prof - 1, alfa, beta, False)
                 if alfa < val:
                     alfa = val
                 if alfa >= beta:
                     return beta, 'abajo'
-            if self.mov_valido(mov_jg=0, mov_dir='izquierda', mov_minimax=True):
-                val, movimiento = self.minimax(prof - 1, alfa, beta, False)
+            if self.mov_valido(mov_jg=0, mov_dir='izquierda', mov_minimax=True):  # validar mov segun ult pos de CPU
+                val, mov = self.minimax(prof - 1, alfa, beta, False)
                 if alfa < val:
                     alfa = val
                 if alfa >= beta:
                     return beta, 'izquierda'
+            return alfa, ''
         else:
-            if self.mov_valido(mov_jg=1, mov_dir='arriba', mov_minimax=True):
-                val, movimiento = self.minimax(prof - 1, alfa, beta, True)
+            if self.mov_valido(mov_jg=1, mov_dir='arriba', mov_minimax=True):  # validar mov segun ult pos de JUGADOR
+                val, mov = self.minimax(prof - 1, alfa, beta, True)
                 if beta > val:
                     beta = val
                 if alfa >= beta:
                     return alfa, 'arriba'
-            if self.mov_valido(mov_jg=1, mov_dir='derecha', mov_minimax=True):
-                val, movimiento = self.minimax(prof - 1, alfa, beta, True)
+            if self.mov_valido(mov_jg=1, mov_dir='derecha', mov_minimax=True):  # validar mov segun ult pos de JUGADOR
+                val, mov = self.minimax(prof - 1, alfa, beta, True)
                 if beta > val:
                     beta = val
                 if alfa >= beta:
                     return alfa, 'derecha'
-            if self.mov_valido(mov_jg=1, mov_dir='abajo', mov_minimax=True):
-                val, movimiento = self.minimax(prof - 1, alfa, beta, True)
+            if self.mov_valido(mov_jg=1, mov_dir='abajo', mov_minimax=True):  # validar mov segun ult pos de JUGADOR
+                val, mov = self.minimax(prof - 1, alfa, beta, True)
                 if beta > val:
                     beta = val
                 if alfa >= beta:
                     return alfa, 'abajo'
-            if self.mov_valido(mov_jg=1, mov_dir='izquierda', mov_minimax=True):
-                val, movimiento = self.minimax(prof - 1, alfa, beta, True)
+            if self.mov_valido(mov_jg=1, mov_dir='izquierda', mov_minimax=True):  # validar mov segun ult pos de JUGADOR
+                val, mov = self.minimax(prof - 1, alfa, beta, True)
                 if beta > val:
                     beta = val
                 if alfa >= beta:
                     return alfa, 'izquierda'
-        return beta, 'arriba'
+            return beta, ''
 
 
 # -- ------------------------------------------------------------------------------------------------ Clase: Celda -- #
@@ -470,13 +474,11 @@ class Celda(object):
             # si la celda es del CPU
             if self.cel_controlador == juego_tablero.tab_jugadores[0].jug_nombre:
                 # imprimir simbolo + valor + simbolo
-                return f'{juego_tablero.tab_jugadores[0].jug_simbolo}{self.cel_valor}' \
-                       f'{juego_tablero.tab_jugadores[0].jug_simbolo}'
+                return f'{self.cel_simbolo}{self.cel_valor}'f'{self.cel_simbolo}'
             # Si la celda es del jugador
             elif self.cel_controlador == juego_tablero.tab_jugadores[1].jug_nombre:
                 # imprimir simbolo + valor + simbolo
-                return f'{juego_tablero.tab_jugadores[1].jug_simbolo}{self.cel_valor}' \
-                       f'{juego_tablero.tab_jugadores[1].jug_simbolo}'
+                return f'{self.cel_simbolo}{self.cel_valor}'f'{self.cel_simbolo}'
             else:
                 # imprimir valor
                 return f' {self.cel_valor } '
@@ -485,13 +487,11 @@ class Celda(object):
             # si la celda es del CPU
             if self.cel_controlador == juego_tablero.tab_jugadores[0].jug_nombre:
                 # imprimir simbolo + valor + simbolo
-                return f'{juego_tablero.tab_jugadores[0].jug_simbolo}0{self.cel_valor}' \
-                       f'{juego_tablero.tab_jugadores[0].jug_simbolo}'
+                return f'{self.cel_simbolo}0{self.cel_valor}'f'{self.cel_simbolo}'
             # si la celda es del jugador
             elif self.cel_controlador == juego_tablero.tab_jugadores[1].jug_nombre:
                 # imprimir simbolo + 0 + valor + simbolo
-                return f'{juego_tablero.tab_jugadores[1].jug_simbolo}0{self.cel_valor}' \
-                       f'{juego_tablero.tab_jugadores[1].jug_simbolo}'
+                return f'{self.cel_simbolo}0{self.cel_valor}'f'{self.cel_simbolo}'
             else:
                 # imprimir valor
                 return f' 0{ self.cel_valor } '
