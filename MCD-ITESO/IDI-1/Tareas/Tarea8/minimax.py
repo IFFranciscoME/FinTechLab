@@ -23,7 +23,7 @@ def gen_jugar():
 
         # Mostrar mensaje que cpu esta moviendo
         print('\nSkynet moviendo: ')
-        time.sleep(.2)
+        time.sleep(1)
 
         # Si ya no hay movimientos disponibles para cpu, se termina el juego
         if not juego_tablero.mov_disponibles(mov_jg=0):
@@ -48,14 +48,17 @@ def gen_jugar():
 
         # Mostrar mensaje que cpu esta moviendo
         print('\n john connor moviendo: ')
-        time.sleep(.2)
+        # retardo de tiempo en segundos
+        time.sleep(1)
 
         # -- Validar movimiento aceptado (Dentro de tablero)
         # Obtener movimiento a jugador
         jg_mov = gen_entrada_usuario()
+
+        # para debugging
         # jg_mov = 'izquierda'
 
-        # rendirse
+        # revisar si se elige rendirse
         if jg_mov == 'rendirse':
             break
 
@@ -65,11 +68,13 @@ def gen_jugar():
             print(' ### movimiento no valido ### ')
             # Solicitar movimiento a jugador
             jg_mov = gen_entrada_usuario()
+            # para debugging
             # jg_mov = 'arriba'
 
         # Realizar movimiento del jugador
         juego_tablero.realizar_mov(mov_jg=1, mov_dir=jg_mov)
 
+        # imprimir tablero y puntuaciones
         print(juego_tablero)
         print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
         print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
@@ -82,6 +87,9 @@ def gen_jugar():
 # ------------------------------------------------------------------------------------------------------------------- #
 
 def gen_inicializar():
+    """
+    :return: Tablero : Regresa instancia de clase Tablero : Inicializar el tablero del juego
+    """
     # Semilla para reproducibilidad
     np.random.seed(5)
     # Jugador CPU
@@ -130,6 +138,9 @@ def gen_inicializar():
 # ------------------------------------------------------------------------------------------------------------------- #
 
 def gen_juicio_final():
+    """
+    :return: Imprime en pantalla mensajes del juicio final y como todos nos vamos a morir
+    """
 
     d1 = '\nAgosto 4, 1997 - 00:00:00 EST, Cyberdine activa al protocolo Skynet.'
     for a in range(68):
@@ -155,7 +166,9 @@ def gen_juicio_final():
         print(d4[d], sep='', end='', flush=True)
         time.sleep(0.05)
 
+    # retardo de tiempo en segundos
     time.sleep(2)
+    # lo inevitable
     print('\n\n ... Nos morimos ')
 
 
@@ -163,21 +176,29 @@ def gen_juicio_final():
 # ------------------------------------------------------------------------------------------------------------------- #
 
 def gen_hay_esperanza():
+    """
+    :return: imprime en pantalla mensaje : imprime mensaje de esperanza
+    """
 
-    return print('\n Gano la humanidad')
+    return print('\n ¡ Gano la humanidad !')
 
 
 # -- ------------------------------------------------------------------------- Funcion Global : Entrada de usuario -- #
 # ------------------------------------------------------------------------------------------------------------------- #
 
 def gen_entrada_usuario():
+    """
+    :return: imprime en pantalla : solicita entrada y regresa movimiento capturado por usuario
+    """
 
+    # Imprimir mensaje en pantalla
     print('')
     print("----------------------- ¿A dónde vas a mover? -------------------- ")
     print("------------------ ------------------------------ ---------------- ")
     print("  1 = arriba, 2 = derecha, 3 = abajo, 4 = izquierda, 5 = rendirse  ")
     in_mov = int(input("\nMovimiento: "))
 
+    # revisar cual opcion ingreso el usuario
     if in_mov == 1:
         return 'arriba'
     elif in_mov == 2:
@@ -189,6 +210,7 @@ def gen_entrada_usuario():
     elif in_mov == 5:
         return 'rendirse'
     else:
+        # retardo de tiempo en segundos
         time.sleep(1)
         print(" \n ")
         print("** los movimientos validos son 1, 2, 3, 4, intenta de nuevo ** ")
@@ -471,6 +493,9 @@ class Celda(object):
 
     # Imprimir contenido de la celda
     def __str__(self):
+        """
+        :return: str : cadena de caracteres para imprimir contenido de celda en consola
+        """
         # cuando el numero sea de 2 digitos
         if len(str(self.cel_valor)) % 2 == 0:
             # si la celda es del CPU
@@ -509,43 +534,59 @@ if __name__ == '__main__':
 
     # -- -------------------------------------------------------------------------------- Inicializacion del juego -- #
     # Mensaje de bienvenida
-    # input('\n \nSkynet: ¿Estás listo? \n')
-    # time.sleep(0.5)
+    version = input('\n \nSkynet: ¿Estás listo?, \n\n '
+                    '¿Cual version quieres?: 1 = Completa o 2 = Debugging (parametros fijos)?')
+    time.sleep(.5)
 
-    # solicitar Dificultad
-    # in_dif = int(input("Elige dificultad (3 = 'facil', '5 = 'dificil): "))
-    in_dif = 3
+    if version == 1:
+        # solicitar Dificultad
+        in_dif = int(input("Elige dificultad (3 = 'facil', '5 = 'dificil): "))
+        # para debugging
+        # in_dif = 3
 
-    # solicitar min para aleatorios
-    # in_min = int(input("Ingresa el numero mínimo para aleatorios (entero > 0): "))
-    in_min = 1
+        # solicitar min para aleatorios
+        in_min = int(input("Ingresa el numero mínimo para aleatorios (entero > 0): "))
+        # para debugging
+        # in_min = 1
 
-    # solicitar max para aleatorios
-    # in_max = int(input("Ingresa el numero máximo para aleatorios (entero > 0): "))
-    in_max = 15
+        # solicitar max para aleatorios
+        in_max = int(input("Ingresa el numero máximo para aleatorios (entero > 0): "))
+        # para debugging
+        # in_max = 15
 
-    # solicitar tamaño de matriz
-    # in_mat = int(input("Ingresa el valor de N para la matriz N x N (entero > 2): "))
-    in_mat = 8
+        # solicitar tamaño de matriz
+        in_mat = int(input("Ingresa el valor de N para la matriz N x N (entero > 2): "))
+        # para debugging
+        # in_mat = 8
 
-    # solicitar nombre de jugador
-    # in_nom = str(input("Ingresa el nombre del jugador: "))
-    in_nom = 'john connor'
+        # solicitar nombre de jugador
+        in_nm = str(input("Ingresa el nombre del jugador: "))
+        in_nom = 'john connor'
 
-    # Dinamica John Connor
-    # loading = 'John Connor'
-    # time.sleep(2)
-    # print('\nBuen intento ...\n')
-    # time.sleep(2)
-    # for i in range(11):
-    #     print(loading[i], sep='', end=' ', flush=True)
-    #     time.sleep(0.25)
-    #
-    # cls()
-    # # imprimir mensaje de inicio
-    # time.sleep(2.5)
-    # print("\n \n ................ Dia del Juicio Final ................ ")
-    # time.sleep(1.5)
+        # Dinamica John Connor
+        loading = 'John Connor'
+        time.sleep(2)
+        print('\nBuen intento ...\n')
+        time.sleep(2)
+        for i in range(11):
+            print(loading[i], sep='', end=' ', flush=True)
+            time.sleep(0.25)
+
+    else:
+        print('\n Parametros: \n Dificultad: 3, Min aleatorio: 1, Max aleatorio: 15, Matriz: 8x8')
+        in_dif = 3
+        in_min = 1
+        in_max = 15
+        in_mat = 8
+        in_nom = 'Johnn Connor'
+
+    # retardo de tiempo en segundos
+    time.sleep(3)
+
+    # imprimir mensaje de inicio
+    time.sleep(2.5)
+    print("\n \n ................ Dia del Juicio Final ................ ")
+    time.sleep(1.5)
 
     # inicializar tablero
     juego_tablero = gen_inicializar()
