@@ -38,6 +38,7 @@ def gen_jugar():
         juego_tablero.realizar_mov(mov_jg=0, mov_dir=movimiento_cpu)
 
         # Imprimir tablero y marcadores
+        print('Movimiento final de skynet fue: ' + str(movimiento_cpu))
         print(juego_tablero)
         print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
         print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
@@ -51,8 +52,8 @@ def gen_jugar():
 
         # -- Validar movimiento aceptado (Dentro de tablero)
         # Obtener movimiento a jugador
-        # jg_mov = gen_entrada_usuario()
-        jg_mov = 'izquierda'
+        jg_mov = gen_entrada_usuario()
+        # jg_mov = 'izquierda'
 
         # rendirse
         if jg_mov == 'rendirse':
@@ -63,8 +64,8 @@ def gen_jugar():
             # mensaje de error
             print(' ### movimiento no valido ### ')
             # Solicitar movimiento a jugador
-            # jg_mov = gen_entrada_usuario()
-            jg_mov = 'arriba'
+            jg_mov = gen_entrada_usuario()
+            # jg_mov = 'arriba'
 
         # Realizar movimiento del jugador
         juego_tablero.realizar_mov(mov_jg=1, mov_dir=jg_mov)
@@ -323,7 +324,7 @@ class Tablero(object):
                 self.tab_jugadores[mov_jg].jug_puntos += self.tab_celdas[y][x].cel_valor
                 # Actualizar el score de tablero
                 self.tab_score = (self.tab_jugadores[0].jug_puntos - self.tab_jugadores[1].jug_puntos)
-                # print(self)
+                print(self)
 
             return True
 
@@ -418,7 +419,7 @@ class Tablero(object):
                     alfa = val
                 if alfa >= beta:
                     return beta, 'izquierda'
-            return alfa, 'alfa max'
+            return alfa, 'mensaje poda max alfa'
         else:
             if self.mov_valido(mov_jg=1, mov_dir='arriba', mov_minimax=True):  # validar mov segun ult pos de JUG
                 val, mov = self.minimax(prof - 1, alfa, beta, True)
@@ -444,7 +445,7 @@ class Tablero(object):
                     beta = val
                 if alfa >= beta:
                     return alfa, 'izquierda'
-        return beta, 'beta min'
+        return beta, 'mensaje poda min beta'
 
 
 # -- ------------------------------------------------------------------------------------------------ Clase: Celda -- #
