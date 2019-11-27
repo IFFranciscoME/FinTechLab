@@ -23,7 +23,7 @@ def gen_jugar():
 
         # Mostrar mensaje que cpu esta moviendo
         print('\nSkynet moviendo: ')
-        time.sleep(1)
+        time.sleep(2)
 
         # Si ya no hay movimientos disponibles para cpu, se termina el juego
         if not juego_tablero.mov_disponibles(mov_jg=0):
@@ -34,6 +34,7 @@ def gen_jugar():
 
         # Obtener movimiento para CPU, utilizando tablero hipotetico
         valor, movimiento_cpu = minimax_tablero.minimax(prof=in_dif, alfa=float('-inf'), beta=float('inf'), ismax=True)
+
         # Actualizar celda destino con movimiento de jugador
         juego_tablero.realizar_mov(mov_jg=0, mov_dir=movimiento_cpu)
 
@@ -441,7 +442,7 @@ class Tablero(object):
                     alfa = val
                 if alfa >= beta:
                     return beta, 'izquierda'
-            return alfa, 'mensaje poda max alfa'
+            return alfa, 'derecha'
         else:
             if self.mov_valido(mov_jg=1, mov_dir='arriba', mov_minimax=True):  # validar mov segun ult pos de JUG
                 val, mov = self.minimax(prof - 1, alfa, beta, True)
@@ -467,7 +468,7 @@ class Tablero(object):
                     beta = val
                 if alfa >= beta:
                     return alfa, 'izquierda'
-        return beta, 'mensaje poda min beta'
+        return beta, 'abajo'
 
 
 # -- ------------------------------------------------------------------------------------------------ Clase: Celda -- #
@@ -534,11 +535,12 @@ if __name__ == '__main__':
 
     # -- -------------------------------------------------------------------------------- Inicializacion del juego -- #
     # Mensaje de bienvenida
-    version = input('\n \nSkynet: ¿Estás listo?, \n\n '
-                    '¿Cual version quieres?: 1 = Completa o 2 = Debugging (parametros fijos)?')
+    version = int(input('\n \nSkynet: ¿Estás listo?, \n\n '
+                    '¿Cual version quieres?: 1 = Completa o 2 = Debugging (parametros fijos)?'))
     time.sleep(.5)
 
     if version == 1:
+        print('\n')
         # solicitar Dificultad
         in_dif = int(input("Elige dificultad (3 = 'facil', '5 = 'dificil): "))
         # para debugging
@@ -593,6 +595,7 @@ if __name__ == '__main__':
 
     # Imprimir tablero inicial
     print(juego_tablero)
+    time.sleep(4)
     print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
     print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
     print('Score: ' + str(juego_tablero.tab_score))
