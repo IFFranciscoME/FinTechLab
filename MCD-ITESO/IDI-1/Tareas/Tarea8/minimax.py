@@ -424,25 +424,25 @@ class Tablero(object):
                     alfa = val
                 if alfa >= beta:
                     return beta, 'arriba'
-            if self.mov_valido(mov_jg=0, mov_dir='derecha', mov_minimax=True):  # validar mov segun ult pos de CPU
+            elif self.mov_valido(mov_jg=0, mov_dir='derecha', mov_minimax=True):  # validar mov segun ult pos de CPU
                 val, mov = self.minimax(prof - 1, alfa, beta, False)
                 if alfa < val:
                     alfa = val
                 if alfa >= beta:
                     return beta, 'derecha'
-            if self.mov_valido(mov_jg=0, mov_dir='abajo', mov_minimax=True):  # validar mov segun ultima posicion CPU
+            elif self.mov_valido(mov_jg=0, mov_dir='abajo', mov_minimax=True):  # validar mov segun ultima posicion CPU
                 val, mov = self.minimax(prof - 1, alfa, beta, False)
                 if alfa < val:
                     alfa = val
                 if alfa >= beta:
                     return beta, 'abajo'
-            if self.mov_valido(mov_jg=0, mov_dir='izquierda', mov_minimax=True):  # validar mov segun ult pos de CPU
+            elif self.mov_valido(mov_jg=0, mov_dir='izquierda', mov_minimax=True):  # validar mov segun ult pos de CPU
                 val, mov = self.minimax(prof - 1, alfa, beta, False)
                 if alfa < val:
                     alfa = val
                 if alfa >= beta:
                     return beta, 'izquierda'
-            return alfa, 'derecha'
+            return alfa, 'alfa max'
         else:
             if self.mov_valido(mov_jg=1, mov_dir='arriba', mov_minimax=True):  # validar mov segun ult pos de JUG
                 val, mov = self.minimax(prof - 1, alfa, beta, True)
@@ -450,25 +450,25 @@ class Tablero(object):
                     beta = val
                 if alfa >= beta:
                     return alfa, 'arriba'
-            if self.mov_valido(mov_jg=1, mov_dir='derecha', mov_minimax=True):  # validar mov segun ult pos de JUG
+            elif self.mov_valido(mov_jg=1, mov_dir='derecha', mov_minimax=True):  # validar mov segun ult pos de JUG
                 val, mov = self.minimax(prof - 1, alfa, beta, True)
                 if beta > val:
                     beta = val
                 if alfa >= beta:
                     return alfa, 'derecha'
-            if self.mov_valido(mov_jg=1, mov_dir='abajo', mov_minimax=True):  # validar mov segun ult pos de JUG
+            elif self.mov_valido(mov_jg=1, mov_dir='abajo', mov_minimax=True):  # validar mov segun ult pos de JUG
                 val, mov = self.minimax(prof - 1, alfa, beta, True)
                 if beta > val:
                     beta = val
                 if alfa >= beta:
                     return alfa, 'abajo'
-            if self.mov_valido(mov_jg=1, mov_dir='izquierda', mov_minimax=True):  # validar mov segun ult pos de JUG
+            elif self.mov_valido(mov_jg=1, mov_dir='izquierda', mov_minimax=True):  # validar mov segun ult pos de JUG
                 val, mov = self.minimax(prof - 1, alfa, beta, True)
                 if beta > val:
                     beta = val
                 if alfa >= beta:
                     return alfa, 'izquierda'
-        return beta, 'abajo'
+            return beta, 'beta min'
 
 
 # -- ------------------------------------------------------------------------------------------------ Clase: Celda -- #
