@@ -442,7 +442,7 @@ class Tablero(object):
                     alfa = val
                 if alfa >= beta:
                     return beta, 'izquierda'
-            return alfa, 'alfa max'
+            return alfa, 'alfa max'  # Aqui se tiene que regresar el movimiento que mejor valor dio
         else:
             if self.mov_valido(mov_jg=1, mov_dir='arriba', mov_minimax=True):  # validar mov segun ult pos de JUG
                 val, mov = self.minimax(prof - 1, alfa, beta, True)
@@ -468,7 +468,7 @@ class Tablero(object):
                     beta = val
                 if alfa >= beta:
                     return alfa, 'izquierda'
-            return beta, 'beta min'
+            return beta, 'beta min'  # Aqui se tiene que regresar el movimiento que mejor valor dio
 
 
 # -- ------------------------------------------------------------------------------------------------ Clase: Celda -- #
