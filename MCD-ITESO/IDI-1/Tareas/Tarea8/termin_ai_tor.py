@@ -9,6 +9,9 @@
 import numpy as np  # funciones numericas
 import time         # retardos de tiempo
 
+# Semilla para reproducibilidad de tableros
+np.random.seed(5)
+
 
 # -- ------------------------------------------------------------------------- Funcion Global : Entrada de usuario -- #
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -97,8 +100,7 @@ def gen_inicializar():
     """
     :return: Tablero : Regresa instancia de clase Tablero : Inicializar el tablero del juego
     """
-    # Semilla para reproducibilidad
-    np.random.seed(5)
+
     # Jugador CPU
     jug_0 = Jugador(jug_posicion=[0, 0], jug_iscpu=True, jug_ismax=True, jug_nombre='skynet', jug_simbolo='*')
     # Jugador Humano
