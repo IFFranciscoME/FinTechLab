@@ -415,60 +415,17 @@ class Tablero(object):
         :param ismax: bool : True/False : si el jugador es maximizador o minimizador
         :return: int/str : resultado del arbol minimax, score del tablero calculado / movimiento en el tablero calculado
         """
+
+        # incluir opcion de cuando en la busqueda del arbol se terminen los movimientos validos, regresar
+        # el mejor score que se haya alcanzado antes de llegar al tope
+
         if prof == 0:
             return self.tab_score, 'prof 0'
         if ismax:
-            if self.mov_valido(mov_jg=0, mov_dir='arriba', mov_minimax=True):  # validar mov segun ult pos de CPU
-                val, mov = self.minimax(prof - 1, alfa, beta, False)
-                if alfa < val:
-                    alfa = val
-                if alfa >= beta:
-                    return beta, 'arriba'
-            elif self.mov_valido(mov_jg=0, mov_dir='derecha', mov_minimax=True):  # validar mov segun ult pos de CPU
-                val, mov = self.minimax(prof - 1, alfa, beta, False)
-                if alfa < val:
-                    alfa = val
-                if alfa >= beta:
-                    return beta, 'derecha'
-            elif self.mov_valido(mov_jg=0, mov_dir='abajo', mov_minimax=True):  # validar mov segun ultima posicion CPU
-                val, mov = self.minimax(prof - 1, alfa, beta, False)
-                if alfa < val:
-                    alfa = val
-                if alfa >= beta:
-                    return beta, 'abajo'
-            elif self.mov_valido(mov_jg=0, mov_dir='izquierda', mov_minimax=True):  # validar mov segun ult pos de CPU
-                val, mov = self.minimax(prof - 1, alfa, beta, False)
-                if alfa < val:
-                    alfa = val
-                if alfa >= beta:
-                    return beta, 'izquierda'
-            return alfa, 'alfa max'  # Aqui se tiene que regresar el movimiento que mejor valor dio
+            a = 1
         else:
-            if self.mov_valido(mov_jg=1, mov_dir='arriba', mov_minimax=True):  # validar mov segun ult pos de JUG
-                val, mov = self.minimax(prof - 1, alfa, beta, True)
-                if beta > val:
-                    beta = val
-                if alfa >= beta:
-                    return alfa, 'arriba'
-            elif self.mov_valido(mov_jg=1, mov_dir='derecha', mov_minimax=True):  # validar mov segun ult pos de JUG
-                val, mov = self.minimax(prof - 1, alfa, beta, True)
-                if beta > val:
-                    beta = val
-                if alfa >= beta:
-                    return alfa, 'derecha'
-            elif self.mov_valido(mov_jg=1, mov_dir='abajo', mov_minimax=True):  # validar mov segun ult pos de JUG
-                val, mov = self.minimax(prof - 1, alfa, beta, True)
-                if beta > val:
-                    beta = val
-                if alfa >= beta:
-                    return alfa, 'abajo'
-            elif self.mov_valido(mov_jg=1, mov_dir='izquierda', mov_minimax=True):  # validar mov segun ult pos de JUG
-                val, mov = self.minimax(prof - 1, alfa, beta, True)
-                if beta > val:
-                    beta = val
-                if alfa >= beta:
-                    return alfa, 'izquierda'
-            return beta, 'beta min'  # Aqui se tiene que regresar el movimiento que mejor valor dio
+            a = 1
+        return 1
 
 
 # -- ------------------------------------------------------------------------------------------------ Clase: Celda -- #
@@ -536,7 +493,7 @@ if __name__ == '__main__':
     # -- -------------------------------------------------------------------------------- Inicializacion del juego -- #
     # Mensaje de bienvenida
     version = int(input('\n \nSkynet: ¿Estás listo?, \n\n '
-                    '¿Cual version quieres?: 1 = Completa o 2 = Debugging (parametros fijos)?'))
+                        '¿Cual version quieres?: 1 = Completa o 2 = Debugging (parametros fijos)?'))
     time.sleep(.5)
 
     if version == 1:
