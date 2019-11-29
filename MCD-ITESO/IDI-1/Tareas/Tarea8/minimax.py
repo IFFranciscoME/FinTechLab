@@ -9,7 +9,7 @@
 import numpy as np  # funciones numericas
 import time         # retardos de tiempo
 import os           # para limpiar la consola
-import copy         # copiar instancias de clase en otra direccion de memoria
+# import copy         # copiar instancias de clase en otra direccion de memoria
 
 
 # -- ------------------------------------------------------------------------- Funcion Global : Entrada de usuario -- #
@@ -17,23 +17,38 @@ import copy         # copiar instancias de clase en otra direccion de memoria
 
 def gen_jugar():
     # While con bandera de si el juego termino
-    while juego_tablero.mov_disponibles(mov_jg=1):
+    while juego_tablero.mov_disponibles(mov_jg=1) or juego_tablero.mov_disponibles(mov_jg=0):
 
         # -- -------------------------------------------------------------------------------------- Movimiento CPU -- #
 
         # Mostrar mensaje que cpu esta moviendo
         print('\nSkynet moviendo: ')
-        time.sleep(2)
+        # time.sleep(.5)
 
         # Si ya no hay movimientos disponibles para cpu, se termina el juego
         if not juego_tablero.mov_disponibles(mov_jg=0):
             break
 
         # copia de tablero original, en direccion de memoria propia, para actualizar un tablero guia con mov de minimax
-        minimax_tablero = copy.deepcopy(juego_tablero)
+        # minimax_tablero = copy.deepcopy(juego_tablero)
+
+        # variable global para score
+        # score_tablero = minimax_tablero.tab_score
 
         # Obtener movimiento para CPU, utilizando tablero hipotetico
-        valor, movimiento_cpu = minimax_tablero.minimax(prof=in_dif, alfa=float('-inf'), beta=float('inf'), ismax=True)
+        # valor, mov_cpu = minimax_tablero.minimax(prof=in_dif, alfa=float('-inf'), beta=float('inf'), ismax=True)
+
+        x0 = juego_tablero.tab_jugadores[0].jug_posicion[0]
+        y0 = juego_tablero.tab_jugadores[0].jug_posicion[1]
+        # val = juego_tablero.tab_celdas[x0][y0].cel_valor
+        val = juego_tablero.tab_score
+
+        x1 = juego_tablero.tab_jugadores[1].jug_posicion[0]
+        y1 = juego_tablero.tab_jugadores[1].jug_posicion[1]
+
+        arbol = Nodo(val)
+        valor, movimiento_cpu = arbol.minimax_nodo(in_dif, x0, y0, x1, y1, player=0,
+                                                   alpha=float('-inf'), beta=float('inf'))
 
         # Actualizar celda destino con movimiento de jugador
         juego_tablero.realizar_mov(mov_jg=0, mov_dir=movimiento_cpu)
@@ -50,7 +65,7 @@ def gen_jugar():
         # Mostrar mensaje que cpu esta moviendo
         print('\n john connor moviendo: ')
         # retardo de tiempo en segundos
-        time.sleep(1)
+        time.sleep(.5)
 
         # -- Validar movimiento aceptado (Dentro de tablero)
         # Obtener movimiento a jugador
@@ -143,7 +158,7 @@ def gen_juicio_final():
     :return: Imprime en pantalla mensajes del juicio final y como todos nos vamos a morir
     """
 
-    d1 = '\nAgosto 4, 1997 - 00:00:00 EST, Cyberdine activa al protocolo Skynet.'
+    d1 = '\nAgosto 04, 1997 - 00:00:00 EST, Cyberdine activa al protocolo Skynet.'
     for a in range(68):
         print(d1[a], sep='', end='', flush=True)
         time.sleep(0.09)
@@ -202,13 +217,13 @@ def gen_entrada_usuario():
     # revisar cual opcion ingreso el usuario
     if in_mov == 1:
         return 'arriba'
-    elif in_mov == 2:
+    if in_mov == 2:
         return 'derecha'
-    elif in_mov == 3:
+    if in_mov == 3:
         return 'abajo'
-    elif in_mov == 4:
+    if in_mov == 4:
         return 'izquierda'
-    elif in_mov == 5:
+    if in_mov == 5:
         return 'rendirse'
     else:
         # retardo de tiempo en segundos
@@ -280,7 +295,7 @@ class Tablero(object):
         self.tab_jugadores = tab_jugs
         # Celdas dentro de tablero
         self.tab_celdas = [[Celda(cel_valor=np.random.randint(tab_min, tab_max), cel_posicion=(i, j))
-                            for j in range(tab_dims)] for i in range(tab_dims)]
+                            for i in range(tab_dims)] for j in range(tab_dims)]
 
     # Imprimir tablero en consola
     def __str__(self):
@@ -347,7 +362,7 @@ class Tablero(object):
                 self.tab_jugadores[mov_jg].jug_puntos += self.tab_celdas[y][x].cel_valor
                 # Actualizar el score de tablero
                 self.tab_score = (self.tab_jugadores[0].jug_puntos - self.tab_jugadores[1].jug_puntos)
-                print(self)
+                # print(self)
 
             return True
 
@@ -420,12 +435,111 @@ class Tablero(object):
         # el mejor score que se haya alcanzado antes de llegar al tope
 
         if prof == 0:
-            return self.tab_score, 'prof 0'
-        if ismax:
-            a = 1
+            return self.tab_score, 'hoja'
         else:
-            a = 1
-        return 1
+            bandera = 0
+            direccion_min = 'nada'
+            direccion_max = 'nada'
+
+            if ismax:
+                if self.mov_valido(mov_jg=0, mov_dir='arriba', mov_minimax=True):
+                    bandera = 1
+                    val, mov = self.minimax(prof - 1, alfa, beta, False)
+
+                    if val > alfa:
+                        alfa = val
+                        direccion_max = 'arriba'
+
+                    if alfa >= beta:
+                        return beta, 'arriba'
+
+                if self.mov_valido(mov_jg=0, mov_dir='abajo', mov_minimax=True):
+                    bandera = 1
+                    val, mov = self.minimax(prof - 1, alfa, beta, False)
+
+                    if val > alfa:
+                        alfa = val
+                        direccion_max = 'abajo'
+
+                    if alfa >= beta:
+                        return beta, 'abajo'
+
+                if self.mov_valido(mov_jg=0, mov_dir='derecha', mov_minimax=True):
+                    bandera = 1
+                    val, mov = self.minimax(prof - 1, alfa, beta, False)
+
+                    if val > alfa:
+                        alfa = val
+                        direccion_max = 'derecha'
+
+                    if alfa >= beta:
+                        return beta, 'derecha'
+
+                if self.mov_valido(mov_jg=0, mov_dir='izquierda', mov_minimax=True):
+                    bandera = 1
+                    val, mov = self.minimax(prof - 1, alfa, beta, False)
+
+                    if val > alfa:
+                        alfa = val
+                        direccion_max = 'izquierda'
+
+                    if alfa >= beta:
+                        return beta, 'izquierda'
+
+                if bandera == 0:
+                    return self.tab_score, 'hoja'
+
+                return alfa, direccion_max
+
+            else:
+                if self.mov_valido(mov_jg=1, mov_dir='arriba', mov_minimax=True):
+                    bandera = 1
+                    val, mov = self.minimax(prof - 1, alfa, beta, True)
+
+                    if val < beta:
+                        beta = val
+                        direccion_min = 'arriba'
+
+                    if alfa >= beta:
+                        return alfa, 'arriba'
+
+                if self.mov_valido(mov_jg=1, mov_dir='abajo', mov_minimax=True):
+                    bandera = 1
+                    val, mov = self.minimax(prof - 1, alfa, beta, True)
+
+                    if val < beta:
+                        beta = val
+                        direccion_min = 'abajo'
+
+                    if alfa >= beta:
+                        return alfa, 'abajo'
+
+                if self.mov_valido(mov_jg=1, mov_dir='derecha', mov_minimax=True):
+                    bandera = 1
+                    val, mov = self.minimax(prof - 1, alfa, beta, True)
+
+                    if val < beta:
+                        beta = val
+                        direccion_min = 'derecha'
+
+                    if alfa >= beta:
+                        return alfa, 'derecha'
+
+                if self.mov_valido(mov_jg=1, mov_dir='izquierda', mov_minimax=True):
+                    bandera = 1
+                    val, mov = self.minimax(prof - 1, alfa, beta, True)
+
+                    if val < beta:
+                        beta = val
+                        direccion_min = 'izquierda'
+
+                    if alfa >= beta:
+                        return alfa, 'izquierda'
+
+                if bandera == 0:
+                    return -self.tab_score, 'hoja'
+
+                return beta, direccion_min
 
 
 # -- ------------------------------------------------------------------------------------------------ Clase: Celda -- #
@@ -482,6 +596,185 @@ class Celda(object):
                 return f' 0{ self.cel_valor } '
 
 
+# -- ------------------------------------------------------------------------------------------------- Clase: Nodo -- #
+# ------------------------------------------------------------------------------------------------------------------- #
+
+class Nodo:
+    def __init__(self, data=0):
+        self.data = data
+        self.left = None
+        self.right = None
+        self.up = None
+        self.down = None
+
+    def minimax_nodo(self, depth, row1, column1, row2, column2, player,  alpha, beta):
+
+        if depth == 0:
+            return self.data, 'hoja'
+
+        else:
+            bandera = 0
+            direccion_min = 'vacio'
+            direccion_max = 'vacio'
+
+        # -- para movimiento de CPU -- #
+        if player == 0:
+            row = column1
+            column = row1
+
+            # -- Movimiento hacia ARRIBA
+            if row - 1 >= 0:
+                if not juego_tablero.tab_celdas[row-1][column].cel_visitada:
+                    bandera = 1
+                    juego_tablero.tab_celdas[row-1][column].cel_visitada = True
+                    self.up = Nodo(self.data + juego_tablero.tab_celdas[row-1][column].cel_valor)
+
+                    valor, direccion = self.up.minimax_nodo(depth-1, row-1, column, row2, column2, 1, alpha, beta)
+                    juego_tablero.tab_celdas[row-1][column].cel_visitada = False
+                    direccion = 'arriba'
+
+                    if valor > alpha:
+                        alpha = valor
+                        direccion_max = direccion
+
+                    if alpha >= beta:
+                        return beta, 'arriba'
+
+            if row + 1 <= in_mat-1:
+                if not juego_tablero.tab_celdas[row+1][column].cel_visitada:
+                    bandera = 1
+                    juego_tablero.tab_celdas[row+1][column].cel_visitada = True
+                    self.down = Nodo(self.data + juego_tablero.tab_celdas[row+1][column].cel_valor)
+
+                    valor, direccion = self.down.minimax_nodo(depth-1, row+1, column, row2, column2, 1, alpha, beta)
+                    juego_tablero.tab_celdas[row+1][column].cel_visitada = False
+                    direccion = 'abajo'
+
+                    if valor > alpha:
+                        alpha = valor
+                        direccion_max = direccion
+
+                    if alpha >= beta:
+                        return beta, 'abajo'
+
+            if column - 1 >= 0:
+                if not juego_tablero.tab_celdas[row][column-1].cel_visitada:
+                    bandera = 1
+                    juego_tablero.tab_celdas[row][column-1].cel_visitada = True
+                    self.left = Nodo(self.data + juego_tablero.tab_celdas[row][column-1].cel_valor)
+
+                    valor, direccion = self.left.minimax_nodo(depth-1, row, column-1, row2, column2, 1, alpha, beta)
+                    juego_tablero.tab_celdas[row][column-1].cel_visitada = False
+                    direccion = 'izquierda'
+
+                    if valor > alpha:
+                        alpha = valor
+                        direccion_max = direccion
+
+                    if alpha >= beta:
+                        return beta, 'izquierda'
+
+            if column + 1 <= in_mat-1:
+                if not juego_tablero.tab_celdas[row][column+1].cel_visitada:
+                    bandera = 1
+                    juego_tablero.tab_celdas[row][column+1].cel_visitada = True
+                    self.right = Nodo(self.data + juego_tablero.tab_celdas[row][column+1].cel_valor)
+
+                    valor, direccion = self.right.minimax_nodo(depth-1, row, column+1, row2, column2, 1, alpha, beta)
+                    juego_tablero.tab_celdas[row][column+1].cel_visitada = False
+                    direccion = 'derecha'
+
+                    if valor > alpha:
+                        alpha = valor
+                        direccion_max = direccion
+
+                    if alpha >= beta:
+                        return beta, 'derecha'
+
+            if bandera == 0:
+                return self.data, 'hoja'
+
+            return alpha, direccion_max
+
+        # -- para movimiento de jugador
+        else:
+            row = column2
+            column = row2
+
+            if row - 1 >= 0:
+                if not juego_tablero.tab_celdas[row-1][column].cel_visitada:
+                    bandera = 1
+                    juego_tablero.tab_celdas[row-1][column].cel_visitada = True
+                    self.up = Nodo(self.data - juego_tablero.tab_celdas[row-1][column].cel_valor)
+
+                    valor, direccion = self.up.minimax_nodo(depth-1, row-1, column, row2, column2, 0, alpha, beta)
+                    juego_tablero.tab_celdas[row-1][column].cel_visitada = False
+                    direccion = 'arriba'
+
+                    if beta > valor:
+                        beta = valor
+                        direccion_min = direccion
+
+                    if alpha >= beta:
+                        return alpha, 'arriba'
+
+            if row + 1 <= in_mat-1:
+                if not juego_tablero.tab_celdas[row+1][column].cel_visitada:
+                    bandera = 1
+                    juego_tablero.tab_celdas[row+1][column].cel_visitada = True
+                    self.down = Nodo(self.data - juego_tablero.tab_celdas[row+1][column].cel_valor)
+
+                    valor, direccion = self.down.minimax_nodo(depth-1, row+1, column, row2, column2, 0, alpha, beta)
+                    juego_tablero.tab_celdas[row+1][column].cel_visitada = False
+                    direccion = 'abajo'
+
+                    if beta > valor:
+                        beta = valor
+                        direccion_min = direccion
+
+                    if alpha >= beta:
+                        return alpha, 'abajo'
+
+            if column - 1 >= 0:
+                if not juego_tablero.tab_celdas[row][column-1].cel_visitada:
+                    bandera = 1
+                    juego_tablero.tab_celdas[row][column-1].cel_visitada = True
+                    self.left = Nodo(self.data - juego_tablero.tab_celdas[row][column-1].cel_valor)
+
+                    valor, direccion = self.left.minimax_nodo(depth-1, row, column-1, row2, column2, 0, alpha, beta)
+                    juego_tablero.tab_celdas[row][column-1].cel_visitada = False
+                    direccion = 'izquierda'
+
+                    if beta > valor:
+                        beta = valor
+                        direccion_min = direccion
+
+                    if alpha >= beta:
+                        return alpha, 'izquierda'
+
+            if column + 1 <= in_mat-1:
+                if not juego_tablero.tab_celdas[row][column+1].cel_visitada:
+                    bandera = 1
+                    juego_tablero.tab_celdas[row][column+1].cel_visitada = True
+                    self.right = Nodo(self.data - juego_tablero.tab_celdas[row][column+1].cel_valor)
+
+                    valor, direccion = self.right.minimax_nodo(depth-1, row, column+1, row2, column2, 0, alpha, beta)
+                    juego_tablero.tab_celdas[row][column+1].cel_visitada = False
+                    direccion = 'derecha'
+
+                    if beta > valor:
+                        beta = valor
+                        direccion_min = direccion
+
+                    if alpha >= beta:
+                        return alpha, 'derecha'
+
+            if bandera == 0:
+                return self.data, 'hoja'
+
+            return beta, direccion_min
+
+
 # -- ------------------------------------------------------------------------------------------------ Seccion Main -- #
 # ------------------------------------------------------------------------------------------------------------------- #
 
@@ -492,8 +785,9 @@ if __name__ == '__main__':
 
     # -- -------------------------------------------------------------------------------- Inicializacion del juego -- #
     # Mensaje de bienvenida
-    version = int(input('\n \nSkynet: ¿Estás listo?, \n\n '
-                        '¿Cual version quieres?: 1 = Completa o 2 = Debugging (parametros fijos)?'))
+    # version = int(input('\n \nSkynet: ¿Estás listo?, \n\n '
+    #                     '¿Cual version quieres?: 1 = Completa o 2 = Debugging (parametros fijos)?'))
+    version = 2
     time.sleep(.5)
 
     if version == 1:
@@ -526,21 +820,21 @@ if __name__ == '__main__':
         loading = 'John Connor'
         time.sleep(2)
         print('\nBuen intento ...\n')
-        time.sleep(2)
-        for i in range(11):
-            print(loading[i], sep='', end=' ', flush=True)
+        time.sleep(1.5)
+        for r in range(11):
+            print(loading[r], sep='', end=' ', flush=True)
             time.sleep(0.25)
 
     else:
         print('\n Parametros: \n Dificultad: 3, Min aleatorio: 1, Max aleatorio: 15, Matriz: 8x8')
-        in_dif = 3
+        in_dif = 5
         in_min = 1
         in_max = 15
         in_mat = 8
         in_nom = 'Johnn Connor'
 
     # retardo de tiempo en segundos
-    time.sleep(3)
+    time.sleep(1)
 
     # imprimir mensaje de inicio
     time.sleep(2.5)
