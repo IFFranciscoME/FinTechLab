@@ -1,7 +1,7 @@
 
 # -- ------------------------------------------------------------------------------------------------------------- -- #
-# -- Proyecto: Juego de Trazo Maximo con Inteligencia Artificial (Minimax)                                         -- #
-# -- Repositorio: https://github.com/IFFranciscoME/FinTechLab/blob/master/MCD-ITESO/IDI-1/Tareas/Tarea8/minimax.py -- #
+# -- Proyecto: Juego de Trazo Maximo con Inteligencia Artificial (Isolation Game + MiniMax)                        -- #
+# -- Repositorio: https://github.com/IFFranciscoME/FinTechLab/blob/master/MCD-ITESO/IDI-1/Tareas/Tarea8            -- #
 # -- Autor: FranciscoME                                                                                            -- #
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
