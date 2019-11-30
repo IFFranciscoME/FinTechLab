@@ -163,19 +163,19 @@ def gen_juicio_final():
         print(d1[a], sep='', end='', flush=True)
         time.sleep(0.11)
 
-    time.sleep(0.95)
+    time.sleep(1.05)
     d2 = '\nAgosto 29, 1997 - 02:14:00 EST, Skynet se vuelve autoconciente.'
     for b in range(63):
         print(d2[b], sep='', end='', flush=True)
         time.sleep(0.11)
 
-    time.sleep(0.95)
+    time.sleep(1.05)
     d3 = '\nAgosto 29, 1997 - 02:14:01 EST, Skynet lanza cohetes nucleares a Rusia.'
     for c in range(71):
         print(d3[c], sep='', end='', flush=True)
         time.sleep(0.11)
 
-    time.sleep(0.95)
+    time.sleep(1.05)
     d4 = '\nAgosto 29, 1997 - 02:15:01 EST, Skynet incita un contra ataque contra los humanos, quienes,' \
          ' en panico, tratan de desconectarla.'
     for d in range(125):
