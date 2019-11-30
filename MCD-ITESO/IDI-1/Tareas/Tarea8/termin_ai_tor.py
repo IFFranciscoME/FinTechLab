@@ -10,7 +10,7 @@ import numpy as np  # funciones numericas
 import time         # retardos de tiempo
 
 # Semilla para reproducibilidad de tableros
-np.random.seed(5)
+np.random.seed(10)
 
 
 # -- ------------------------------------------------------------------------- Funcion Global : Entrada de usuario -- #
@@ -38,8 +38,8 @@ def gen_jugar():
 
         # Arbol minimax
         arbol = Nodo(val)
-        valor, movimiento_cpu = arbol.minimax_nodo(in_dif, x0, y0, x1, y1, player=0,
-                                                   alpha=float('-inf'), beta=float('inf'))
+        valor, movimiento_cpu = arbol.minimax_nodo(in_dif, x0, y0, x1, y1, jugador=0,
+                                                   alfa=float('-inf'), beta=float('inf'))
 
         # Actualizar celda destino con movimiento de jugador
         juego_tablero.realizar_mov(mov_jg=0, mov_dir=movimiento_cpu)
@@ -47,8 +47,10 @@ def gen_jugar():
         # Imprimir tablero y marcadores
         print('Movimiento final de skynet fue: ' + str(movimiento_cpu))
         print(juego_tablero)
-        print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
-        print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
+        print(juego_tablero.tab_jugadores[0].jug_simbolo +
+              ' Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
+        print(juego_tablero.tab_jugadores[1].jug_simbolo +
+              ' Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
         print('Score: ' + str(juego_tablero.tab_score))
 
         # -- ---------------------------------------------------------------------------------- Movimiento PERSONA -- #
@@ -86,8 +88,10 @@ def gen_jugar():
         # Imprimir tablero y marcadores
         print('Movimiento final de Connor, John fue: ' + str(movimiento_cpu))
         print(juego_tablero)
-        print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
-        print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
+        print(juego_tablero.tab_jugadores[0].jug_simbolo +
+              ' Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
+        print(juego_tablero.tab_jugadores[1].jug_simbolo +
+              ' Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
         print('Score: ' + str(juego_tablero.tab_score))
 
     return True
@@ -150,6 +154,9 @@ def gen_juicio_final():
     """
     :return: Imprime en pantalla mensajes del juicio final y como todos nos vamos a morir
     """
+    print(' ')
+    print('\n\n')
+    print(' ')
 
     d1 = '\nAgosto 04, 1997 - 00:00:00 EST, Cyberdine activa al protocolo Skynet.'
     for a in range(69):
@@ -188,6 +195,9 @@ def gen_hay_esperanza():
     """
     :return: imprime en pantalla mensaje : imprime mensaje de esperanza
     """
+    print(' ')
+    print('\n\n')
+    print(' ')
 
     print('\n Gano la humanidad ')
 
@@ -471,177 +481,211 @@ class Celda(object):
 
 class Nodo:
     def __init__(self, data=0):
+        """
+        :param data: int : dato que tiene cada nodo, es el score del tablero actualizado al movimiento de celda
+        """
+        # valor del nodo actualizado al movimiento del tablero
         self.data = data
-        self.left = None
-        self.right = None
-        self.up = None
-        self.down = None
+        # hijo de nodo - lado izquierdo
+        self.izquierda = None
+        # hijo de nodo - lado derecho
+        self.derecha = None
+        # hijo de nodo - lado arriba
+        self.arriba = None
+        # hijo de nodo - lado abajo
+        self.abajo = None
 
-    def minimax_nodo(self, depth, row1, column1, row2, column2, player,  alpha, beta):
+    def minimax_nodo(self, prof, x0, y0, x1, y1, jugador,  alfa, beta):
+        """
+        :param prof: int : profundidad deseada para que busque el algoritmo
+        :param x0: int : componente x de la celda que se accesa en el algoritmo (cpu)
+        :param y0: int : componente x de la celda que se accesa en el algoritmo (cpu)
+        :param x1: int : componente x de la celda que se accesa en el algoritmo (jugador)
+        :param y1: int : componente x de la celda que se accesa en el algoritmo (jugador)
+        :param jugador: int : 0 si es CPU, 1 si es usuario/persona
+        :param alfa: float : Valor representativo de infinito negativo (para algoritmo) : -float('inf')
+        :param beta: float : Valor representativo de infinito positivo (para algoritmo) : float('inf')
+        :return: valor, direccion : int, str : regresa el valor del score y la direccion a mover en tablero
+        """
 
-        if depth == 0:
+        # Verificar si se llego a la profundidad deseada
+        if prof == 0:
             return self.data, 'hoja'
 
+        # Avanzar declarando banderas de apoyo
         else:
-            bandera = 0
-            direccion_min = 'vacio'
-            direccion_max = 'vacio'
+            bandera = 0  # para saber si hubo o no poda
+            direccion_min = 'vacio'  # para actualizar/regresar la direccion obtenida en cada nodo de arbol jugador
+            direccion_max = 'vacio'  # para actualizar/regresar la direccion obtenida en cada nodo de arbol cpu
 
         # -- para movimiento de CPU -- #
-        if player == 0:
-            row = column1
-            column = row1
+        if jugador == 0:
+            # parametros invertidos por forma en la que se crearon las celdas en tablero
+            x = y0
+            y = x0
 
-            # -- Movimiento hacia ARRIBA
-            if row - 1 >= 0:
-                if not juego_tablero.tab_celdas[row-1][column].cel_visitada:
+            # -- ------------------------------------------------------------------- Movimiento hacia ARRIBA (CPU) -- #
+            if x - 1 >= 0:
+                if not juego_tablero.tab_celdas[x-1][y].cel_visitada:
                     bandera = 1
-                    juego_tablero.tab_celdas[row-1][column].cel_visitada = True
-                    self.up = Nodo(self.data + juego_tablero.tab_celdas[row-1][column].cel_valor)
+                    juego_tablero.tab_celdas[x-1][y].cel_visitada = True
+                    self.arriba = Nodo(self.data + juego_tablero.tab_celdas[x-1][y].cel_valor)
 
-                    valor, direccion = self.up.minimax_nodo(depth-1, row-1, column, row2, column2, 1, alpha, beta)
-                    juego_tablero.tab_celdas[row-1][column].cel_visitada = False
+                    valor, direccion = self.arriba.minimax_nodo(prof-1, x-1, y, x1, y1, 1, alfa, beta)
+                    juego_tablero.tab_celdas[x-1][y].cel_visitada = False
                     direccion = 'arriba'
 
-                    if valor > alpha:
-                        alpha = valor
+                    if valor > alfa:
+                        alfa = valor
                         direccion_max = direccion
 
-                    if alpha >= beta:
+                    if alfa >= beta:
                         return beta, 'arriba'
 
-            if row + 1 <= in_mat-1:
-                if not juego_tablero.tab_celdas[row+1][column].cel_visitada:
+            # -- -------------------------------------------------------------------- Movimiento hacia ABAJO (CPU) -- #
+            if x + 1 <= in_mat-1:
+                if not juego_tablero.tab_celdas[x+1][y].cel_visitada:
                     bandera = 1
-                    juego_tablero.tab_celdas[row+1][column].cel_visitada = True
-                    self.down = Nodo(self.data + juego_tablero.tab_celdas[row+1][column].cel_valor)
+                    juego_tablero.tab_celdas[x+1][y].cel_visitada = True
+                    self.abajo = Nodo(self.data + juego_tablero.tab_celdas[x+1][y].cel_valor)
 
-                    valor, direccion = self.down.minimax_nodo(depth-1, row+1, column, row2, column2, 1, alpha, beta)
-                    juego_tablero.tab_celdas[row+1][column].cel_visitada = False
+                    valor, direccion = self.abajo.minimax_nodo(prof-1, x+1, y, x1, y1, 1, alfa, beta)
+                    juego_tablero.tab_celdas[x+1][y].cel_visitada = False
                     direccion = 'abajo'
 
-                    if valor > alpha:
-                        alpha = valor
+                    if valor > alfa:
+                        alfa = valor
                         direccion_max = direccion
 
-                    if alpha >= beta:
+                    if alfa >= beta:
                         return beta, 'abajo'
 
-            if column - 1 >= 0:
-                if not juego_tablero.tab_celdas[row][column-1].cel_visitada:
+            # -- ---------------------------------------------------------------- Movimiento hacia IZQUIERDA (CPU) -- #
+            if y - 1 >= 0:
+                if not juego_tablero.tab_celdas[x][y-1].cel_visitada:
                     bandera = 1
-                    juego_tablero.tab_celdas[row][column-1].cel_visitada = True
-                    self.left = Nodo(self.data + juego_tablero.tab_celdas[row][column-1].cel_valor)
+                    juego_tablero.tab_celdas[x][y-1].cel_visitada = True
+                    self.izquierda = Nodo(self.data + juego_tablero.tab_celdas[x][y-1].cel_valor)
 
-                    valor, direccion = self.left.minimax_nodo(depth-1, row, column-1, row2, column2, 1, alpha, beta)
-                    juego_tablero.tab_celdas[row][column-1].cel_visitada = False
+                    valor, direccion = self.izquierda.minimax_nodo(prof-1, x, y-1, x1, y1, 1, alfa, beta)
+                    juego_tablero.tab_celdas[x][y-1].cel_visitada = False
                     direccion = 'izquierda'
 
-                    if valor > alpha:
-                        alpha = valor
+                    if valor > alfa:
+                        alfa = valor
                         direccion_max = direccion
 
-                    if alpha >= beta:
+                    if alfa >= beta:
                         return beta, 'izquierda'
 
-            if column + 1 <= in_mat-1:
-                if not juego_tablero.tab_celdas[row][column+1].cel_visitada:
+            # -- ------------------------------------------------------------------ Movimiento hacia DERECHA (CPU) -- #
+            if y + 1 <= in_mat-1:
+                if not juego_tablero.tab_celdas[x][y+1].cel_visitada:
                     bandera = 1
-                    juego_tablero.tab_celdas[row][column+1].cel_visitada = True
-                    self.right = Nodo(self.data + juego_tablero.tab_celdas[row][column+1].cel_valor)
+                    juego_tablero.tab_celdas[x][y+1].cel_visitada = True
+                    self.derecha = Nodo(self.data + juego_tablero.tab_celdas[x][y+1].cel_valor)
 
-                    valor, direccion = self.right.minimax_nodo(depth-1, row, column+1, row2, column2, 1, alpha, beta)
-                    juego_tablero.tab_celdas[row][column+1].cel_visitada = False
+                    valor, direccion = self.derecha.minimax_nodo(prof-1, x, y+1, x1, y1, 1, alfa, beta)
+                    juego_tablero.tab_celdas[x][y+1].cel_visitada = False
                     direccion = 'derecha'
 
-                    if valor > alpha:
-                        alpha = valor
+                    if valor > alfa:
+                        alfa = valor
                         direccion_max = direccion
 
-                    if alpha >= beta:
+                    if alfa >= beta:
                         return beta, 'derecha'
 
+            # -- Bandera de haber alcanzado una hoja del arbol
             if bandera == 0:
                 return self.data, 'hoja'
 
-            return alpha, direccion_max
+            # -- ------------------------------------------------------------------------ Return para recursividad -- #
+            return alfa, direccion_max
 
-        # -- para movimiento de jugador
+        # -- para movimiento de JUGADOR
         else:
-            row = column2
-            column = row2
+            # parametros invertidos por forma en la que se crearon las celdas en tablero
+            x = y1
+            y = x1
 
-            if row - 1 >= 0:
-                if not juego_tablero.tab_celdas[row-1][column].cel_visitada:
+            # -- --------------------------------------------------------------- Movimiento hacia ARRIBA (JUGADOR) -- #
+            if x - 1 >= 0:
+                if not juego_tablero.tab_celdas[x-1][y].cel_visitada:
                     bandera = 1
-                    juego_tablero.tab_celdas[row-1][column].cel_visitada = True
-                    self.up = Nodo(self.data - juego_tablero.tab_celdas[row-1][column].cel_valor)
+                    juego_tablero.tab_celdas[x-1][y].cel_visitada = True
+                    self.arriba = Nodo(self.data - juego_tablero.tab_celdas[x-1][y].cel_valor)
 
-                    valor, direccion = self.up.minimax_nodo(depth-1, row-1, column, row2, column2, 0, alpha, beta)
-                    juego_tablero.tab_celdas[row-1][column].cel_visitada = False
+                    valor, direccion = self.arriba.minimax_nodo(prof-1, x-1, y, x1, y1, 0, alfa, beta)
+                    juego_tablero.tab_celdas[x-1][y].cel_visitada = False
                     direccion = 'arriba'
 
                     if beta > valor:
                         beta = valor
                         direccion_min = direccion
 
-                    if alpha >= beta:
-                        return alpha, 'arriba'
+                    if alfa >= beta:
+                        return alfa, 'arriba'
 
-            if row + 1 <= in_mat-1:
-                if not juego_tablero.tab_celdas[row+1][column].cel_visitada:
+            # -- ---------------------------------------------------------------- Movimiento hacia ABAJO (JUGADOR) -- #
+            if x + 1 <= in_mat-1:
+                if not juego_tablero.tab_celdas[x+1][y].cel_visitada:
                     bandera = 1
-                    juego_tablero.tab_celdas[row+1][column].cel_visitada = True
-                    self.down = Nodo(self.data - juego_tablero.tab_celdas[row+1][column].cel_valor)
+                    juego_tablero.tab_celdas[x+1][y].cel_visitada = True
+                    self.abajo = Nodo(self.data - juego_tablero.tab_celdas[x+1][y].cel_valor)
 
-                    valor, direccion = self.down.minimax_nodo(depth-1, row+1, column, row2, column2, 0, alpha, beta)
-                    juego_tablero.tab_celdas[row+1][column].cel_visitada = False
+                    valor, direccion = self.abajo.minimax_nodo(prof-1, x+1, y, x1, y1, 0, alfa, beta)
+                    juego_tablero.tab_celdas[x+1][y].cel_visitada = False
                     direccion = 'abajo'
 
                     if beta > valor:
                         beta = valor
                         direccion_min = direccion
 
-                    if alpha >= beta:
-                        return alpha, 'abajo'
+                    if alfa >= beta:
+                        return alfa, 'abajo'
 
-            if column - 1 >= 0:
-                if not juego_tablero.tab_celdas[row][column-1].cel_visitada:
+            # -- ------------------------------------------------------------ Movimiento hacia IZQUIERDA (JUGADOR) -- #
+            if y - 1 >= 0:
+                if not juego_tablero.tab_celdas[x][y-1].cel_visitada:
                     bandera = 1
-                    juego_tablero.tab_celdas[row][column-1].cel_visitada = True
-                    self.left = Nodo(self.data - juego_tablero.tab_celdas[row][column-1].cel_valor)
+                    juego_tablero.tab_celdas[x][y-1].cel_visitada = True
+                    self.izquierda = Nodo(self.data - juego_tablero.tab_celdas[x][y-1].cel_valor)
 
-                    valor, direccion = self.left.minimax_nodo(depth-1, row, column-1, row2, column2, 0, alpha, beta)
-                    juego_tablero.tab_celdas[row][column-1].cel_visitada = False
+                    valor, direccion = self.izquierda.minimax_nodo(prof-1, x, y-1, x1, y1, 0, alfa, beta)
+                    juego_tablero.tab_celdas[x][y-1].cel_visitada = False
                     direccion = 'izquierda'
 
                     if beta > valor:
                         beta = valor
                         direccion_min = direccion
 
-                    if alpha >= beta:
-                        return alpha, 'izquierda'
+                    if alfa >= beta:
+                        return alfa, 'izquierda'
 
-            if column + 1 <= in_mat-1:
-                if not juego_tablero.tab_celdas[row][column+1].cel_visitada:
+            # -- -------------------------------------------------------------- Movimiento hacia DERECHA (JUGADOR) -- #
+            if y + 1 <= in_mat-1:
+                if not juego_tablero.tab_celdas[x][y+1].cel_visitada:
                     bandera = 1
-                    juego_tablero.tab_celdas[row][column+1].cel_visitada = True
-                    self.right = Nodo(self.data - juego_tablero.tab_celdas[row][column+1].cel_valor)
+                    juego_tablero.tab_celdas[x][y+1].cel_visitada = True
+                    self.derecha = Nodo(self.data - juego_tablero.tab_celdas[x][y+1].cel_valor)
 
-                    valor, direccion = self.right.minimax_nodo(depth-1, row, column+1, row2, column2, 0, alpha, beta)
-                    juego_tablero.tab_celdas[row][column+1].cel_visitada = False
+                    valor, direccion = self.derecha.minimax_nodo(prof-1, x, y+1, x1, y1, 0, alfa, beta)
+                    juego_tablero.tab_celdas[x][y+1].cel_visitada = False
                     direccion = 'derecha'
 
                     if beta > valor:
                         beta = valor
                         direccion_min = direccion
 
-                    if alpha >= beta:
-                        return alpha, 'derecha'
+                    if alfa >= beta:
+                        return alfa, 'derecha'
 
+            # -- Bandera de haber alcanzado una hoja del arbol
             if bandera == 0:
                 return self.data, 'hoja'
 
+            # -- ------------------------------------------------------------------------ Return para recursividad -- #
             return beta, direccion_min
 
 
@@ -649,9 +693,6 @@ class Nodo:
 # ------------------------------------------------------------------------------------------------------------------- #
 
 if __name__ == '__main__':
-
-    def cls():
-        os.system('cls' if os.name == 'nt' else 'clear')
 
     # -- -------------------------------------------------------------------------------- Inicializacion del juego -- #
     # Mensaje de bienvenida
@@ -717,8 +758,10 @@ if __name__ == '__main__':
     # Imprimir tablero inicial
     print(juego_tablero)
     time.sleep(4)
-    print('Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
-    print('Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
+    print(juego_tablero.tab_jugadores[0].jug_simbolo +
+          ' Skynet: ' + str(juego_tablero.tab_jugadores[0].jug_puntos))
+    print(juego_tablero.tab_jugadores[1].jug_simbolo +
+          ' Connor, john: ' + str(juego_tablero.tab_jugadores[1].jug_puntos))
     print('Score: ' + str(juego_tablero.tab_score))
 
     # retardo de 1 segundo
