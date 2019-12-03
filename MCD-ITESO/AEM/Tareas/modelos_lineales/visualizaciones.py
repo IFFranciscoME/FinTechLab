@@ -77,7 +77,7 @@ def g_boxplot_varios(p0_data):
     :return:
 
     debugging
-    p0_data = df_gasto
+    p0_data = pd.DataFrame({'Gasto': [0.43, 0.31, 0.32, 0.46], '':, })
     """
 
     x_data = list(p0_data.columns)

@@ -1,0 +1,30 @@
+
+
+## Estrategia de trading 1
+
+- rlm con variables endogenas (version simple)
+- rlm con variables endogenas (version PCA)
+- estrategia de trading con rlm variables endogenas con la mejor version (sin reduccion o PCA)
+- clustering de configuraciones de estrategia de trading
+
+## Estrategia de trading 2
+
+- clustering secuencial de serie de tiempo financiera
+- estrategia de trading con MASS
+- clustering de configuraciones de estrategia de trading
+
+## Estrategia de trading 3
+- rlm con variables exógenas COT (version simple)
+- rlm con variables exógenas (version PCA)
+- estrategia de trading con rlm variables exógenas
+- clustering de configuraciones de estrategia de trading
+
+# Estrategia de trading 4
+- clustering secuencial de serie de tiempo COT
+- estrategia de trading segun reaccion del precio ante comunicado de COT
+- clustering de configuraciones de estrategia de trading
+
+## Pasos para ajustar modelo RLM
+
+1.- 
+
