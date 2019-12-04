@@ -56,5 +56,9 @@ def f_precios(p_fuente, p_fini, p_ffin, p_ins, p_grn):
 
     return r_precios_hist
 
+
 # -- -------------------------------------------------------------------- Funcion: Obtencion de precios historicos -- #
 # -- -------------------------------------------------------------------- ---------------------------------------- -- #
+
+df_precios = f_precios(p_fuente='oanda', p_ins='EUR_USD', p_grn='W',
+                       p_fini='2016-01-01T00:00:00Z', p_ffin='2019-09-30T00:00:00Z')
