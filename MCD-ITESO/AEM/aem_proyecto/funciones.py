@@ -8,6 +8,7 @@
 # Cargar librerias y dependencias
 import pandas as pd
 import numpy as np
+from statsmodels.tsa.api import acf, pacf
 
 from oandapyV20 import API
 import oandapyV20.endpoints.instruments as instruments
@@ -70,11 +71,10 @@ def f_precios(p_fuente, p_fini, p_ffin, p_ins, p_grn):
 # -- ------------------------------------------------------- FUNCION: Ingenieria de features para series de tiempo -- #
 # -- --------------------------------------- ------------------------------------------------------ Version manual -- #
 
-def f_feature_eng(p_datos, p_ohlc, p_ntiempo):
+def f_feature_eng(p_datos, p_ohlc):
     """
     :param p_datos: pd.DataFrae : dataframe con 5 columnas 'timestamp', 'open', 'high', 'low', 'close'
     :param p_ohlc: bool : True si son datos con columnas 'timestamp', 'open', 'high', 'low', 'close', False otro caso
-    :param p_ntiempo: int : cantidad de periodos de historia para calcular features
     :return: r_features : dataframe con 5 columnas originales, nombres cohercionados. + Features generados
 
     # Debuging
@@ -99,13 +99,22 @@ def f_feature_eng(p_datos, p_ohlc, p_ntiempo):
     # datos['timestamp'] = datos['timestamp'].dt.tz_localize('UTC')
 
     # rendimiento logaritmico de ventana 1
-    datos['logrend'] = np.log(datos['close']/datos['close'].shift(1))
+    datos['logrend'] = np.log(datos['close']/datos['close'].shift(1)).dropna()
 
     # diferencia de high - low como medida de "volatilidad"
     datos['hl'] = datos['high'] - datos['low']
 
+    # funciones de ACF y PACF para determinar ancho de ventana historica
+    data_acf = acf(datos['logrend'].dropna(), nlags=52, fft=True)
+    data_pac = pacf(datos['logrend'].dropna(), nlags=52)
+    # componentes AR y MA
+    maxs = list(set(list(np.where((data_pac > 0.122) | (data_pac < -0.122))[0]) +
+                    list(np.where((data_acf > 0.122) | (data_acf < -0.122))[0])))
+    # encontrar la componente maxima como indicativo de informacion historica autorelacionada
+    max_n = maxs[np.argmax(maxs)]
+
     # ciclo para calcular N features con logica de "Ventanas de tamaño n"
-    for n in range(0, p_ntiempo):
+    for n in range(0, max_n):
 
         # resago n de log rendimiento
         datos['lag_logrend_' + str(n+1)] = datos['logrend'].shift(n+1)
@@ -136,3 +145,16 @@ def f_feature_eng(p_datos, p_ohlc, p_ntiempo):
     r_features = r_features.reset_index(drop=True)
 
     return r_features
+
+
+# -- ------------------------------------------------------------------------------ FUNCION: Analisis de variables -- #
+# -- ------------------------------------------------------------------------------ ------------------------------ -- #
+
+def f_feature_an(p_datos):
+    """
+    :param p_datos:
+    :return:
+    """
+
+    return 1
+
