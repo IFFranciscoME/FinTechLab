@@ -68,7 +68,7 @@ def f_precios(p_fuente, p_fini, p_ffin, p_ins, p_grn):
 
 
 # -- ------------------------------------------------------- FUNCION: Ingenieria de features para series de tiempo -- #
-# -- ------------------------------------------------------- ----------------------------------------------------- -- #
+# -- --------------------------------------- ------------------------------------------------------ Version manual -- #
 
 def f_feature_eng(p_datos, p_ohlc, p_ntiempo):
     """
@@ -104,32 +104,35 @@ def f_feature_eng(p_datos, p_ohlc, p_ntiempo):
     # diferencia de high - low como medida de "volatilidad"
     datos['hl'] = datos['high'] - datos['low']
 
-    # ciclo para calcular features en "ventanas"
+    # ciclo para calcular N features con logica de "Ventanas de tamaño n"
     for n in range(0, p_ntiempo):
 
         # resago n de log rendimiento
-        datos['lag_logrend_' + str(n)] = datos['logrend'].shift(n)
+        datos['lag_logrend_' + str(n+1)] = datos['logrend'].shift(n+1)
 
         # diferencia n de log rendimiento
-        datos['dif_logrend_' + str(n+1)] = datos['logrend'].diff(n)
+        datos['dif_logrend_' + str(n+1)] = datos['logrend'].diff(n+1)
 
         # promedio movil de ventana n con log rendimiento
-        datos['ma_logrend_' + str(n+1)] = datos['logrend'].rolling(n).mean()
+        datos['ma_logrend_' + str(n+2)] = datos['logrend'].rolling(n+2).mean()
 
         # log rendimiento de ventana n
-        datos['logrend_' + str(n)] = np.log(datos['close']/datos['close'].shift(n))
+        datos['logrend_' + str(n+1)] = np.log(datos['close']/datos['close'].shift(n+1))
 
         # resago n de high - low
-        datos['lag_hl_' + str(n)] = datos['hl'].shift(n)
+        datos['lag_hl_' + str(n+1)] = datos['hl'].shift(n+1)
 
         # diferencia n de high - low
-        datos['dif_hl_' + str(n + 1)] = datos['hl'].diff(n)
+        datos['dif_hl_' + str(n+1)] = datos['hl'].diff(n+1)
 
         # promedio movil de ventana n con high - low
-        datos['ma_hl_' + str(n + 1)] = datos['hl'].rolling(n).mean()
+        datos['ma_hl_' + str(n+2)] = datos['hl'].rolling(n+2).mean()
 
-    datos.dropna(axis='columns')
-
-    r_features = datos
+    # borrar columnas donde exista solo NAs
+    r_features = datos.dropna(axis='columns', how='all')
+    # borrar renglones donde exista algun NA
+    r_features = r_features.dropna(axis='rows')
+    # resetear index de dataframe
+    r_features = r_features.reset_index(drop=True)
 
     return r_features
