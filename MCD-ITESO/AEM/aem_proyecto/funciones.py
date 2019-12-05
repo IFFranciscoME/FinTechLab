@@ -13,6 +13,7 @@ from statsmodels.tsa.api import acf, pacf
 from oandapyV20 import API
 import oandapyV20.endpoints.instruments as instruments
 from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 import statsmodels.api as sm                              # utilidades para modelo regresion lineal
 from sklearn.model_selection import train_test_split      # separacion de conjunto de entrenamiento y prueba
@@ -63,7 +64,8 @@ def f_precios(p_fuente, p_fini, p_ffin, p_ins, p_grn):
         # Seleccionar solo las columnas de interes
         r_precios_hist = precios_hist[['TimeStamp', 'Open', 'High', 'Low', 'Close']]
         # cohercionar los nombres de columnas a minusculas
-        r_precios_hist.columns = [r_precios_hist.columns[i].lower() for i in range(0, len(r_precios_hist.columns))]
+        columnas = [r_precios_hist.columns[i].lower() for i in range(0, len(r_precios_hist.columns))]
+        r_precios_hist.columns = columnas
 
         # En caso de que haya sido seleccionada otra fuente, enviar mensaje de error.
     else:
@@ -104,15 +106,18 @@ def f_feature_eng(p_datos):
     # pips descontados al cierre
     datos['co'] = (datos['close']-datos['open'])*10000
 
-    # signo del rendimiento para indicar "alcista = 1" o "bajista = 0"
-    datos['logrend_c'] = [1 if datos['logrend'][i] > 0 else -1 for i in range(0, len(datos['logrend']))]
+    # pips descontados alcistas
+    datos['ho'] = (datos['high'] - datos['open'])*10000
 
-    # diferencia de high - low como medida de "volatilidad"
-    datos['hl'] = datos['high'] - datos['low']
+    # pips descontados bajistas
+    datos['ol'] = (datos['open'] - datos['low'])*10000
+
+    # pips descontados en total (medida de volatilidad)
+    datos['hl'] = (datos['high'] - datos['low'])*10000
 
     # funciones de ACF y PACF para determinar ancho de ventana historica
-    data_acf = acf(datos['logrend'].dropna(), nlags=28, fft=True)
-    data_pac = pacf(datos['logrend'].dropna(), nlags=28)
+    data_acf = acf(datos['logrend'].dropna(), nlags=12, fft=True)
+    data_pac = pacf(datos['logrend'].dropna(), nlags=12)
     sig = round(1.96/np.sqrt(len(datos['logrend'])), 4)
 
     # componentes AR y MA
@@ -121,41 +126,43 @@ def f_feature_eng(p_datos):
     # encontrar la componente maxima como indicativo de informacion historica autorelacionada
     max_n = maxs[np.argmax(maxs)]
 
+    # condicion de 5 resagos minimos arbitrarios
+    if max_n <= 2:
+        max_n = 5
+
     # ciclo para calcular N features con logica de "Ventanas de tamaño n"
     for n in range(0, max_n):
 
-        # resago n de log rendimiento
-        # datos['lag_logrend_' + str(n+1)] = datos['logrend'].shift(n+1)
-
-        # diferencia n de log rendimiento
-        # datos['dif_logrend_' + str(n+2)] = datos['logrend'].diff(n+2)
-
-        # # promedio movil de ventana n con log rendimiento
-        datos['ma_logrend_' + str(n+2)] = datos['logrend'].rolling(n+2).mean()
-
-        # # resago n de high - low
+        # resago n de ho
+        # datos['lag_ho_' + str(n+1)] = datos['ho'].shift(n+1)
+        #
+        # # resago n de ol
+        # datos['lag_ol_' + str(n + 1)] = datos['ho'].shift(n + 1)
+        #
+        # # resago n de hl
         # datos['lag_hl_' + str(n+1)] = datos['hl'].shift(n+1)
 
-        # # diferencia n de high - low
-        # datos['dif_hl_' + str(n+1)] = datos['hl'].diff(n+1)
+        # promedio movil de ventana n
+        datos['ma_ol_' + str(n+2)] = datos['ol'].rolling(n+2).mean()
 
-        # promedio movil de ventana n con high - low
-        datos['ma_hl_' + str(n+2)] = datos['hl'].rolling(n+2).mean()
+        # promedio movil de ventana n
+        datos['ma_ho_' + str(n + 2)] = datos['ho'].rolling(n + 2).mean()
+
+        # promedio movil de ventana n
+        datos['ma_hl_' + str(n + 2)] = datos['hl'].rolling(n + 2).mean()
 
     # asignar timestamp como index
-    datos.index = datos['timestamp']
+    datos.index = pd.to_datetime(datos['timestamp'])
     # quitar columnas no necesarias para modelos de ML
-    datos = datos.drop(['timestamp', 'open', 'high', 'low', 'close', 'hl'], axis=1)
+    datos = datos.drop(['timestamp', 'open', 'high', 'low', 'close', 'hl', 'logrend'], axis=1)
     # borrar columnas donde exista solo NAs
     r_features = datos.dropna(axis='columns', how='all')
     # borrar renglones donde exista algun NA
     r_features = r_features.dropna(axis='rows')
-    # resetear index de dataframe
-    r_features = r_features.reset_index(drop=True)
     # convertir a numeros tipo float las columnas
-    r_features.iloc[:, 2:] = r_features.iloc[:, 2:].astype(float)
+    r_features.iloc[:, 1:] = r_features.iloc[:, 1:].astype(float)
     # estandarizacion de todas las variables independientes
-    r_features[list(r_features.columns[2:])] = StandardScaler().fit_transform(r_features[list(r_features.columns[2:])])
+    r_features[list(r_features.columns[1:])] = StandardScaler().fit_transform(r_features[list(r_features.columns[1:])])
 
     return r_features
 
@@ -190,7 +197,7 @@ def f_rlm(p_datos, p_y):
 
     # Reacomodar los datos como arreglos
     y_multiple = np.array(datos[p_y])
-    x_multiple = np.array(datos.iloc[:, 2:])
+    x_multiple = np.array(datos.iloc[:, 1:])
 
     # datos para entrenamiento y prueba
     train_x, test_x, train_y, test_y = train_test_split(x_multiple, y_multiple, test_size=0.8, shuffle=False)
@@ -215,8 +222,9 @@ def f_rlm(p_datos, p_y):
     # summary de resultados del modelo
     r_train_summary = r_train_modelo.summary()
     # DataFrame con nombre de parametros segun dataset, nombre de parametros y pvalues segun modelo
-    r_df_train = pd.DataFrame({'df_params': ['intercepto'] + list(datos.columns[2:]),
-                               'm_params': r_train_modelo.model.data.param_names, 'pv_params': r_train_modelo.pvalues})
+    r_df_train = pd.DataFrame({'df_params': ['intercepto'] + list(datos.columns[1:]),
+                               'm_params': r_train_modelo.model.data.param_names,
+                               'pv_params': r_train_modelo.pvalues})
     # valor de AIC del modelo
     r_train_aic = r_train_modelo.aic
     # valor de BIC del modelo
@@ -228,7 +236,7 @@ def f_rlm(p_datos, p_y):
     # summary de resultados del modelo
     r_test_summary = r_test_modelo.summary()
     # DataFrame con nombre de parametros segun dataset, nombre de parametros y pvalues segun modelo
-    r_df_test = pd.DataFrame({'df_params': ['intercepto'] + list(datos.columns[2:]),
+    r_df_test = pd.DataFrame({'df_params': ['intercepto'] + list(datos.columns[1:]),
                               'm_params': r_test_modelo.model.data.param_names, 'pv_params': r_test_modelo.pvalues})
     # valor de AIC del modelo
     r_test_aic = r_test_modelo.aic
@@ -246,3 +254,49 @@ def f_rlm(p_datos, p_y):
                             'resultado': r_df_pred_test, 'aic': r_test_aic, 'bic': r_test_bic}}
 
     return r_d_modelo
+
+
+# -- -------------------------------------------------------------------------------- FUNCION: Aplicar PCA a datos -- #
+# -- -------------------------------------------------------------------------------- ---------------------------- -- #
+
+def f_pca(p_datos, p_exp):
+    """
+    :param p_datos:
+    :param p_exp:
+    :return:
+
+    p_datos = df_datos
+    p_exp = .90
+    """
+    datos = p_datos
+
+    pca = PCA(n_components=10)
+    datos_pca = datos.iloc[:, 1:]
+    pca.fit(datos_pca)
+    # Calcular los vectores y valores propios de la martiz de covarianza
+    w, v = np.linalg.eig(pca.get_covariance())
+    # ordenar los valores de mayor a menor
+    indx = np.argsort(w)[::-1]
+    # calcular el procentaje de varianza en cada componente
+    porcentaje = w[indx] / np.sum(w)
+    # calcular el porcentaje acumulado de los componentes
+    porcent_acum = np.cumsum(porcentaje)
+    # encontrar las componentes necesarias para lograr explicar el 90% de variabilidad
+    pca_90 = np.where(porcent_acum > p_exp)[0][0] + 1
+
+    pca = PCA(n_components=pca_90)
+    datos_pca = datos.iloc[:, 1:]
+    df1 = datos.iloc[:, 0]
+    pca.fit(datos_pca)
+    df2 = pd.DataFrame(pca.transform(datos_pca))
+
+    df1.reset_index(drop=True, inplace=True)
+    df2.reset_index(drop=True, inplace=True)
+
+    r_datos_pca = pd.concat([df1, df2], axis=1)
+    r_datos_pca.index = datos_pca.index
+
+    # Renombrar columnas
+    r_datos_pca.columns = ['pca_y'] + ['pca_x_' + str(i) for i in range(0, pca_90)]
+
+    return r_datos_pca

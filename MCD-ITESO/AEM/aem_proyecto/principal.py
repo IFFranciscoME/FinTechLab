@@ -8,23 +8,25 @@
 import funciones as fn
 
 # -- datos de entrada
-df_precios = fn.f_precios(p_fuente='oanda', p_ins='EUR_USD', p_grn='D',
+df_precios = fn.f_precios(p_fuente='oanda', p_ins='EUR_USD', p_grn='W',
                           p_fini='2010-01-01T00:00:00Z', p_ffin='2019-10-31T00:00:00Z')
 
 
 # -- generacion de variables endogenas
 df_datos = fn.f_feature_eng(p_datos=df_precios)
 
-# -- analisis de variables
-
 # -- ajute de modelo 1: RLM con variables endogenas (Sin tratamiento)
-resultado = fn.f_rlm(p_datos=df_datos, p_y='co')
-resultado['train']['summary']
-resultado['test']['summary']
+res1 = fn.f_rlm(p_datos=df_datos, p_y='co')
+print(res1['train']['summary'])
+# print(res1['test']['summary'])
 
 # -- Utilizar PCA para reducir dimensionalidad de modelo 1
+df_pca = fn.f_pca(p_datos=df_datos, p_exp=0.95)
 
 # -- ajuste de modelo 2: RLM con variables endogenas (Reducido con PCA)
+res2 = fn.f_rlm(p_datos=df_pca, p_y='pca_y')
+print(res2['train']['summary'])
+# print(res2['test']['summary'])
 
 # -- estrategia de trading con modelo
 
