@@ -12,6 +12,7 @@ from statsmodels.tsa.api import acf, pacf
 
 from oandapyV20 import API
 import oandapyV20.endpoints.instruments as instruments
+from sklearn.preprocessing import StandardScaler
 
 import statsmodels.api as sm                              # utilidades para modelo regresion lineal
 from sklearn.model_selection import train_test_split      # separacion de conjunto de entrenamiento y prueba
@@ -74,25 +75,21 @@ def f_precios(p_fuente, p_fini, p_ffin, p_ins, p_grn):
 # -- ------------------------------------------------------- FUNCION: Ingenieria de features para series de tiempo -- #
 # -- --------------------------------------- ------------------------------------------------------ Version manual -- #
 
-def f_feature_eng(p_datos, p_ohlc):
+def f_feature_eng(p_datos):
     """
     :param p_datos: pd.DataFrae : dataframe con 5 columnas 'timestamp', 'open', 'high', 'low', 'close'
-    :param p_ohlc: bool : True si son datos con columnas 'timestamp', 'open', 'high', 'low', 'close', False otro caso
     :return: r_features : dataframe con 5 columnas originales, nombres cohercionados. + Features generados
 
     # Debuging
+    p_datos = df_precios
     p_datos = pd.DataFrame({''timestamp': {}, 'open': np.random.normal(1.1400, 0.0050, 20).
                                               'high': np.random.normal(1.1400, 0.0050, 20),
                                               'low': np.random.normal(1.1400, 0.0050, 20),
                                               'close': np.random.normal(1.1400, 0.0050, 20)})
-    p_ohlc = True
-    p_ntiempo = 100
     """
 
     datos = p_datos
-
-    if not p_ohlc:
-        datos.columns = ['timestamp', 'open', 'high', 'low', 'close']
+    datos.columns = ['timestamp', 'open', 'high', 'low', 'close']
 
     cols = list(datos.columns)[1:]
     datos[cols] = datos[cols].apply(pd.to_numeric, errors='coerce')
@@ -103,18 +100,24 @@ def f_feature_eng(p_datos, p_ohlc):
 
     # rendimiento logaritmico de ventana 1
     datos['logrend'] = np.log(datos['close']/datos['close'].shift(1)).dropna()
+
+    # pips descontados al cierre
+    datos['co'] = (datos['close']-datos['open'])*10000
+
     # signo del rendimiento para indicar "alcista = 1" o "bajista = 0"
     datos['logrend_c'] = [1 if datos['logrend'][i] > 0 else -1 for i in range(0, len(datos['logrend']))]
 
     # diferencia de high - low como medida de "volatilidad"
-    datos['hl'] = (datos['high'] - datos['low'])*10000
+    datos['hl'] = datos['high'] - datos['low']
 
     # funciones de ACF y PACF para determinar ancho de ventana historica
-    data_acf = acf(datos['logrend'].dropna(), nlags=52, fft=True)
-    data_pac = pacf(datos['logrend'].dropna(), nlags=52)
+    data_acf = acf(datos['logrend'].dropna(), nlags=28, fft=True)
+    data_pac = pacf(datos['logrend'].dropna(), nlags=28)
+    sig = round(1.96/np.sqrt(len(datos['logrend'])), 4)
+
     # componentes AR y MA
-    maxs = list(set(list(np.where((data_pac > 0.122) | (data_pac < -0.122))[0]) +
-                    list(np.where((data_acf > 0.122) | (data_acf < -0.122))[0])))
+    maxs = list(set(list(np.where((data_pac > sig) | (data_pac < -sig))[0]) +
+                    list(np.where((data_acf > sig) | (data_acf < -sig))[0])))
     # encontrar la componente maxima como indicativo de informacion historica autorelacionada
     max_n = maxs[np.argmax(maxs)]
 
@@ -122,19 +125,19 @@ def f_feature_eng(p_datos, p_ohlc):
     for n in range(0, max_n):
 
         # resago n de log rendimiento
-        datos['lag_logrend_' + str(n+1)] = datos['logrend'].shift(n+1)
+        # datos['lag_logrend_' + str(n+1)] = datos['logrend'].shift(n+1)
 
         # diferencia n de log rendimiento
-        datos['dif_logrend_' + str(n+1)] = datos['logrend'].diff(n+1)
+        # datos['dif_logrend_' + str(n+2)] = datos['logrend'].diff(n+2)
 
-        # promedio movil de ventana n con log rendimiento
+        # # promedio movil de ventana n con log rendimiento
         datos['ma_logrend_' + str(n+2)] = datos['logrend'].rolling(n+2).mean()
 
-        # resago n de high - low
-        datos['lag_hl_' + str(n+1)] = datos['hl'].shift(n+1)
+        # # resago n de high - low
+        # datos['lag_hl_' + str(n+1)] = datos['hl'].shift(n+1)
 
-        # diferencia n de high - low
-        datos['dif_hl_' + str(n+1)] = datos['hl'].diff(n+1)
+        # # diferencia n de high - low
+        # datos['dif_hl_' + str(n+1)] = datos['hl'].diff(n+1)
 
         # promedio movil de ventana n con high - low
         datos['ma_hl_' + str(n+2)] = datos['hl'].rolling(n+2).mean()
@@ -149,6 +152,10 @@ def f_feature_eng(p_datos, p_ohlc):
     r_features = r_features.dropna(axis='rows')
     # resetear index de dataframe
     r_features = r_features.reset_index(drop=True)
+    # convertir a numeros tipo float las columnas
+    r_features.iloc[:, 2:] = r_features.iloc[:, 2:].astype(float)
+    # estandarizacion de todas las variables independientes
+    r_features[list(r_features.columns[2:])] = StandardScaler().fit_transform(r_features[list(r_features.columns[2:])])
 
     return r_features
 
@@ -171,9 +178,10 @@ def f_feature_importance(p_datos):
 # -- -------------------------------------------------------------------------------- FUNCION: Ajustar RLM a datos -- #
 # -- -------------------------------------------------------------------------------- ---------------------------- -- #
 
-def f_rlm(p_datos):
+def f_rlm(p_datos, p_y):
     """
     :param p_datos: pd.DataFrame : DataFrame con variable "y" (1era col), y n variables "x_n" (2:n)
+    :param p_y : str : nombre de la columna a elegir como variable dependiente Y
     :return:
     p_datos = df_datos
     """
@@ -181,7 +189,7 @@ def f_rlm(p_datos):
     datos = p_datos
 
     # Reacomodar los datos como arreglos
-    y_multiple = np.array(datos.iloc[:, 1])
+    y_multiple = np.array(datos[p_y])
     x_multiple = np.array(datos.iloc[:, 2:])
 
     # datos para entrenamiento y prueba
