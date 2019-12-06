@@ -12,13 +12,13 @@ import oandapyV20.endpoints.instruments as instruments    # informacion de preci
 
 # -- --------------------------------------------------------------------------- Solo cargar datos pre-descargados -- #
 # leer archivo de precios historicos ya descargados previamente
-df_pe_m5 = pd.read_csv("archivos/eurusd_m5.csv")
-df_pe_w = pd.read_csv("archivos/eurusd_w.csv")
+df_pe_m5 = pd.read_csv("archivos/Eur_Usd_M5.csv")
+df_pe_w = pd.read_csv("archivos/Eur_Usd_W.csv")
 df_ce = pd.read_csv("archivos/calendario_economico.csv")
 
 # seleccionar indicadores que hayan sido publicados 4 veces en cada mes (semanales)
 df_ce = df_ce.iloc[np.where(df_ce['timestamp'] == '01/04/2016 19:30:00')[0][0]:len(df_ce['timestamp'])]
-df_ce = df_ce.reset_index()
+df_ce = df_ce.reset_index(drop=True)
 df_ce['mes'] = [pd.to_datetime(df_ce['timestamp'][i]).strftime('%m') for i in range(0, len(df_ce['timestamp']))]
 unicos = list(set(df_ce['Name']))
 longitudes = [len(df_ce[df_ce['Name'] == unicos[i]]) for i in range(0, len(unicos))]
@@ -27,6 +27,7 @@ ind_semanales = [unicos[i] for i in res]
 
 # funcion wow
 df_ce_w = df_ce[df_ce['Name'].isin(ind_semanales)]
+df_ce_w = df_ce_w.reset_index(drop=True)
 
 # -- ------------------------------------------------------------------------------ Para descargar todos los datos -- #
 # Token para API de OANDA

@@ -10,17 +10,10 @@ import pandas as pd
 import numpy as np
 from statsmodels.tsa.api import acf, pacf
 
-from oandapyV20 import API
-import oandapyV20.endpoints.instruments as instruments
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import statsmodels.api as sm                              # utilidades para modelo regresion lineal
 from sklearn.model_selection import train_test_split      # separacion de conjunto de entrenamiento y prueba
-
-from datetime import datetime                             # tratamiento de datetime
-from functools import reduce                              # para la union de los dataframes
-from os import listdir, getcwd                            # para leer todos los archivos de un folder
-from os.path import isfile, join                          # encontrar y unir archivos en un folder
 
 pd.set_option('display.max_rows', None)                   # sin limite de renglones maximos para mostrar pandas
 pd.set_option('display.max_columns', None)                # sin limite de columnas maximas para mostrar pandas
@@ -36,52 +29,24 @@ def f_features_exo(p_datos):
     """
     :param p_datos:
     :return:
+
+    p_datos = df_ce_w
     """
 
-    # Obtener el director donde se encuentran todos los archivos
-    directorio = getcwd() + '/archivos/'
+    datos = p_datos
 
-    # Obtener una lista de todos los archivos de datos
-    archivos_ce = [f for f in listdir(directorio) if isfile(join(directorio, f))]
+    # Convertir columna de fechas a datetime
+    datos['timestamp'] = pd.to_datetime(datos['timestamp'])
+    datos['timestamp'] = datos['timestamp'].dt.tz_localize('UTC')
 
-    # -- Funcion para leer y acomodar los datos de cada archivo que este en la carpeta 'archivos'
+    # Ordernarlos de forma ascendente en el tiempo
+    datos.sort_values(by=['timestamp'], inplace=True, ascending=True)
 
-    def f_datos_ce(p0_ind):
-        """
-        :param p0_ind:
-        :return:
-        """
-        # Datos de entrada
-        datos = pd.read_csv('archivos/' + p0_ind)
+    # Agregar columna con numero de año y semana (Servira para empatar fecha de indicador con fecha de precio)
+    datos['Year_Week'] = [datos.loc[i, 'timestamp'].strftime("%Y") + '_' + datos.loc[i, 'timestamp'].strftime("%W")
+                          for i in range(0, len(datos['timestamp']))]
 
-        # Convertir columna de fechas a datetime
-        datos['DateTime'] = [datetime.strptime(datos['DateTime'][i], '%m/%d/%Y %H:%M:%S')
-                             for i in range(0, len(datos['DateTime']))]
-
-        # Ordernarlos de forma ascendente en el tiempo
-        datos.sort_values(by=['DateTime'], inplace=True, ascending=True)
-        datos = datos.reset_index(drop=True)
-
-        # Agregar columna con numero de año y semana (Servira para empatar fecha de indicador con fecha de precio)
-        datos['Year_Week'] = [datos.loc[i, 'DateTime'].strftime("%Y") + '_' +
-                              datos.loc[i, 'DateTime'].strftime("%W") for i in range(0, len(datos['DateTime']))]
-
-        # Solo tomar las columnas para el ejercicio
-        datos = datos[['Year_Week', 'Actual', 'Consensus', 'Previous']]
-
-        # print(datos.head())
-
-        return datos
-
-    # Leer todos los archivos y unir los DataFrames
-    dataframes = [f_datos_ce(p0_ind=archivos_ce[i]) for i in range(0, len(archivos_ce))]
-    datos_ce = reduce(lambda left, right: pd.merge(left, right, on=['Year_Week'], how='inner'), dataframes)
-
-    # Renombrar las columnas
-    variables_ce = ['x_' + str(i) for i in range(0, len(archivos_ce))]
-    datos_ce.columns = ['Year_Week'] + variables_ce
-
-    return p_datos
+    return datos
 
 
 # -- ------------------------------------------------- FUNCION: Generacion de variables ENDOGENAS series de tiempo -- #
