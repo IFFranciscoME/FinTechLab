@@ -6,34 +6,27 @@
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
 import funciones as fn
+from datos import df_pe_m5 as df_precios_M5
+from datos import df_pe_w as df_precios_w
+from datos import df_ce_w as df_ce_w
 
-# -- datos de entrada
-df_precios = fn.f_precios(p_fuente='oanda', p_ins='EUR_USD', p_grn='W',
-                          p_fini='2010-01-01T00:00:00Z', p_ffin='2019-10-31T00:00:00Z')
-
+# -- precios semanales
 
 # -- generacion de variables endogenas
-df_datos = fn.f_feature_eng(p_datos=df_precios)
+df_datos_end = fn.f_features_end(p_datos=df_precios_w)
 
-# -- ajute de modelo 1: RLM con variables endogenas (Sin tratamiento)
-res1 = fn.f_rlm(p_datos=df_datos, p_y='co')
-print(res1['train']['summary'])
-# print(res1['test']['summary'])
+# -- ajute de modelo 1A: RLM con variables endogenas (Sin tratamiento)
+res1 = fn.f_rlm(p_datos=df_datos_end, p_y='co')
 
-# -- Utilizar PCA para reducir dimensionalidad de modelo 1
-df_pca = fn.f_pca(p_datos=df_datos, p_exp=0.95)
+# -- utilizar PCA para reducir dimensionalidad de modelo 1
+df_pca = fn.f_pca(p_datos=df_datos_end, p_exp=0.80)
 
-# -- ajuste de modelo 2: RLM con variables endogenas (Reducido con PCA)
+# -- ajuste de modelo 1B: RLM con variables endogenas (Reducido con PCA)
 res2 = fn.f_rlm(p_datos=df_pca, p_y='pca_y')
-print(res2['train']['summary'])
-# print(res2['test']['summary'])
 
-# -- estrategia de trading con modelo
+# -- generacion de variables exogenas
+# -- ajuste de modelo 2A: RLM con variables exogenas (sin tratamiento)
+# -- utilizar PCA para reducir dimensionalidad de modelo 2
+# -- ajuste de modelo 2B: RLM con variables exogenas (Reducido con PCA)
 
-# -- clustering de resultados de estrategia de trading
-
-# -- clustering secuencial como modelo 3: Uso de algoritmo MASS para series de tiempo financieras
-
-# -- estrategia de trading
-
-# -- comparacion de 2 estrategias (RLM con PCA Vs MASS)
+# -- STS Clustering

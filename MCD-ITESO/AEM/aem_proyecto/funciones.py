@@ -14,9 +14,13 @@ from oandapyV20 import API
 import oandapyV20.endpoints.instruments as instruments
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-
 import statsmodels.api as sm                              # utilidades para modelo regresion lineal
 from sklearn.model_selection import train_test_split      # separacion de conjunto de entrenamiento y prueba
+
+from datetime import datetime                             # tratamiento de datetime
+from functools import reduce                              # para la union de los dataframes
+from os import listdir, getcwd                            # para leer todos los archivos de un folder
+from os.path import isfile, join                          # encontrar y unir archivos en un folder
 
 pd.set_option('display.max_rows', None)                   # sin limite de renglones maximos para mostrar pandas
 pd.set_option('display.max_columns', None)                # sin limite de columnas maximas para mostrar pandas
@@ -25,62 +29,68 @@ pd.set_option('display.expand_frame_repr', False)         # visualizar todas las
 pd.options.mode.chained_assignment = None                 # para evitar el warning enfadoso de indexacion
 
 
-# -- -------------------------------------------------------------------- FUNCION: Obtencion de precios historicos -- #
-# -- -------------------------------------------------------------------- ---------------------------------------- -- #
+# -- -------------------------------------------------- FUNCION: Generacion de variables EXOGENAS series de tiempo -- #
+# -- ---------------------------------------------------------------------------------------------- Version manual -- #
 
-def f_precios(p_fuente, p_fini, p_ffin, p_ins, p_grn):
+def f_features_exo(p_datos):
     """
-    :param p_fuente: str : 'oanda' : nombre de la fuente para solicitar los precios historicos de Oanda
-    :param p_fini: str : '2016-01-02T00:00:00Z' : fecha inicial para historicos, en formato especifico de Oanda
-    :param p_ffin: str : '2016-01-02T00:00:00Z' : fecha inicial para historicos, en formato especifico de Oanda
-    :param p_ins: str : 'EUR_USD' : nombre de instrumento para pedir precios, en formato especifico de Oanda
-    :param p_grn: str : 'W' : granularidad de los precios OHLC, en formato especifico de Oanda
-
-    :return: r_precios_hist : pd.DataFrame : con timestamp y precios OHLC
+    :param p_datos:
+    :return:
     """
 
-    if p_fuente == 'oanda':
+    # Obtener el director donde se encuentran todos los archivos
+    directorio = getcwd() + '/archivos/'
 
-        # Parametros e inicializacion de API de OANDA
-        oa_ak = '7' + '9ae0a52f8e483facdd81f5b316a8ef8-99fb5554f4739c76535b209044f7de2' + '6'  # Token de OANDA
-        api = API(access_token=oa_ak)
-        params = {"granularity": p_grn, "price": "M", "dailyAlignment": 16, "from": p_fini, "to": p_ffin}
+    # Obtener una lista de todos los archivos de datos
+    archivos_ce = [f for f in listdir(directorio) if isfile(join(directorio, f))]
 
-        # Peticion a la API, a traves de la libreria, con los parametros deseados
-        req1 = instruments.InstrumentsCandles(instrument=p_ins, params=params)
-        hist = api.request(req1)
+    # -- Funcion para leer y acomodar los datos de cada archivo que este en la carpeta 'archivos'
 
-        # Proceso para convertir los datos resultado, pasarlos de listas a data frame.
-        lista = []
-        for i in range(len(hist['candles']) - 1):
-            lista.append({'TimeStamp': hist['candles'][i]['time'],
-                          'Open': hist['candles'][i]['mid']['o'], 'High': hist['candles'][i]['mid']['h'],
-                          'Low': hist['candles'][i]['mid']['l'], 'Close': hist['candles'][i]['mid']['c']})
-        # Conversion a DataFrame
-        precios_hist = pd.DataFrame(lista)
+    def f_datos_ce(p0_ind):
+        """
+        :param p0_ind:
+        :return:
+        """
+        # Datos de entrada
+        datos = pd.read_csv('archivos/' + p0_ind)
 
-        # Convertir columna de timestamp que es tipo str a tipo datetime.
-        precios_hist['TimeStamp'] = pd.to_datetime(precios_hist['TimeStamp'])
-        # Seleccionar solo las columnas de interes
-        r_precios_hist = precios_hist[['TimeStamp', 'Open', 'High', 'Low', 'Close']]
-        # cohercionar los nombres de columnas a minusculas
-        columnas = [r_precios_hist.columns[i].lower() for i in range(0, len(r_precios_hist.columns))]
-        r_precios_hist.columns = columnas
+        # Convertir columna de fechas a datetime
+        datos['DateTime'] = [datetime.strptime(datos['DateTime'][i], '%m/%d/%Y %H:%M:%S')
+                             for i in range(0, len(datos['DateTime']))]
 
-        # En caso de que haya sido seleccionada otra fuente, enviar mensaje de error.
-    else:
-        r_precios_hist = 'pendiente conexion a otra fuente'
+        # Ordernarlos de forma ascendente en el tiempo
+        datos.sort_values(by=['DateTime'], inplace=True, ascending=True)
+        datos = datos.reset_index(drop=True)
 
-    return r_precios_hist
+        # Agregar columna con numero de año y semana (Servira para empatar fecha de indicador con fecha de precio)
+        datos['Year_Week'] = [datos.loc[i, 'DateTime'].strftime("%Y") + '_' +
+                              datos.loc[i, 'DateTime'].strftime("%W") for i in range(0, len(datos['DateTime']))]
+
+        # Solo tomar las columnas para el ejercicio
+        datos = datos[['Year_Week', 'Actual', 'Consensus', 'Previous']]
+
+        # print(datos.head())
+
+        return datos
+
+    # Leer todos los archivos y unir los DataFrames
+    dataframes = [f_datos_ce(p0_ind=archivos_ce[i]) for i in range(0, len(archivos_ce))]
+    datos_ce = reduce(lambda left, right: pd.merge(left, right, on=['Year_Week'], how='inner'), dataframes)
+
+    # Renombrar las columnas
+    variables_ce = ['x_' + str(i) for i in range(0, len(archivos_ce))]
+    datos_ce.columns = ['Year_Week'] + variables_ce
+
+    return p_datos
 
 
-# -- ------------------------------------------------------- FUNCION: Ingenieria de features para series de tiempo -- #
-# -- --------------------------------------- ------------------------------------------------------ Version manual -- #
+# -- ------------------------------------------------- FUNCION: Generacion de variables ENDOGENAS series de tiempo -- #
+# -- ---------------------------------------------------------------------------------------------- Version manual -- #
 
-def f_feature_eng(p_datos):
+def f_features_end(p_datos):
     """
     :param p_datos: pd.DataFrae : dataframe con 5 columnas 'timestamp', 'open', 'high', 'low', 'close'
-    :return: r_features : dataframe con 5 columnas originales, nombres cohercionados. + Features generados
+        :return: r_features : dataframe con 5 columnas originales, nombres cohercionados. + Features generados
 
     # Debuging
     p_datos = df_precios
@@ -126,7 +136,7 @@ def f_feature_eng(p_datos):
     # encontrar la componente maxima como indicativo de informacion historica autorelacionada
     max_n = maxs[np.argmax(maxs)]
 
-    # condicion de 5 resagos minimos arbitrarios
+    # condicion arbitraria: 5 resagos minimos para calcular variables moviles
     if max_n <= 2:
         max_n = 5
 
@@ -134,22 +144,22 @@ def f_feature_eng(p_datos):
     for n in range(0, max_n):
 
         # resago n de ho
-        # datos['lag_ho_' + str(n+1)] = datos['ho'].shift(n+1)
-        #
-        # # resago n de ol
-        # datos['lag_ol_' + str(n + 1)] = datos['ho'].shift(n + 1)
-        #
+        datos['lag_ho_' + str(n + 1)] = np.log(datos['ho'].shift(n + 1))
+
+        # resago n de ol
+        datos['lag_ol_' + str(n + 1)] = np.log(datos['ol'].shift(n + 1))
+
         # # resago n de hl
-        # datos['lag_hl_' + str(n+1)] = datos['hl'].shift(n+1)
+        # datos['lag_hl_' + str(n + 1)] = np.log(datos['hl'].shift(n + 1))
 
         # promedio movil de ventana n
-        datos['ma_ol_' + str(n+2)] = datos['ol'].rolling(n+2).mean()
+        datos['ma_ol_' + str(n + 2)] = datos['ol'].rolling(n + 2).mean()
 
         # promedio movil de ventana n
         datos['ma_ho_' + str(n + 2)] = datos['ho'].rolling(n + 2).mean()
 
-        # promedio movil de ventana n
-        datos['ma_hl_' + str(n + 2)] = datos['hl'].rolling(n + 2).mean()
+        # # promedio movil de ventana n
+        # datos['ma_hl_' + str(n + 2)] = datos['hl'].rolling(n + 2).mean()
 
     # asignar timestamp como index
     datos.index = pd.to_datetime(datos['timestamp'])
@@ -300,3 +310,25 @@ def f_pca(p_datos, p_exp):
     r_datos_pca.columns = ['pca_y'] + ['pca_x_' + str(i) for i in range(0, pca_90)]
 
     return r_datos_pca
+
+
+# -- -------------------------------------------------------------------------------- FUNCION: Desempeño de modelo -- #
+# -- -------------------------------------------------------------------------------- ---------------------------- -- #
+
+def f_analisis_mod(p_datos):
+    """
+    :param p_datos
+    :return:
+    p_datos = df_datos
+    """
+
+    # from statsmodels.stats.outliers_influence import variance_inflation_factor
+    # from patsy import dmatrices
+    # p_datos.index = [np.arange(len(p_datos))]
+    # features = " + ".join(list(p_datos.columns[1:]))
+    # y, X = dmatrices('co ~' + features, p_datos, return_type='dataframe')
+    # vif = pd.DataFrame()
+    # vif["VIF Factor"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
+    # vif["features"] = X.columns
+
+    return p_datos

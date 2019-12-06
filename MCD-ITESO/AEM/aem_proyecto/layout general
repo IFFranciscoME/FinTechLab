@@ -26,5 +26,12 @@
 
 ## Pasos para ajustar modelo RLM
 
-1.- ______
+## Patrones temporales: Motif, Shapelet and discords
+
+- Motif: Sub-secuencias en una serie de tiempo que tienen alta similitud entre ellas
+
+- longitud del motif
+- soporte del motif
+- similitud del patron
+- posicion relativa del patron
 
