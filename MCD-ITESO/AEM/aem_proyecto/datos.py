@@ -1,9 +1,9 @@
 
-# -- ------------------------------------------------------------------------------------------------------------- -- #
+# -- --------------------------------------------------------------------------------------------------- -- #
 # -- Proyecto:
 # -- Codigo:
 # -- Autor: Francisco ME
-# -- ------------------------------------------------------------------------------------------------------------- -- #
+# -- --------------------------------------------------------------------------------------------------- -- #
 
 import numpy as np                                        # funciones numericas
 import pandas as pd                                       # dataframes y utilidades
@@ -11,7 +11,7 @@ from datetime import timedelta                            # diferencia entre dat
 from oandapyV20 import API                                # conexion con broker para informacion historica
 import oandapyV20.endpoints.instruments as instruments    # informacion de precios historicos
 
-# -- --------------------------------------------------------------------------- Solo cargar datos pre-descargados -- #
+# -- ----------------------------------------------------------------- Solo cargar datos pre-descargados -- #
 # leer archivo de precios historicos ya descargados previamente
 df_pe_m5 = pd.read_csv("archivos/Eur_Usd_M5.csv")
 df_pe_w = pd.read_csv("archivos/Eur_Usd_W.csv")
@@ -20,7 +20,8 @@ df_ce = pd.read_csv("archivos/Calendario_Economico.csv")
 # seleccionar indicadores que hayan sido publicados 4 veces en cada mes (semanales)
 df_ce = df_ce.iloc[np.where(df_ce['timestamp'] == '01/04/2016 19:30:00')[0][0]:len(df_ce['timestamp'])]
 df_ce = df_ce.reset_index(drop=True)
-df_ce['mes'] = [pd.to_datetime(df_ce['timestamp'][i]).strftime('%m') for i in range(0, len(df_ce['timestamp']))]
+df_ce['mes'] = [pd.to_datetime(df_ce['timestamp'][i]).strftime('%m')
+                for i in range(0, len(df_ce['timestamp']))]
 unicos = list(set(df_ce['Name']))
 longitudes = [len(df_ce[df_ce['Name'] == unicos[i]]) for i in range(0, len(unicos))]
 res = [idx for idx, val in enumerate(longitudes) if val > 12*3.5*4]
@@ -30,7 +31,7 @@ ind_semanales = [unicos[i] for i in res]
 df_ce_w = df_ce[df_ce['Name'].isin(ind_semanales)]
 df_ce_w = df_ce_w.reset_index(drop=True)
 
-# -- ------------------------------------------------------------------------------ Para descargar todos los datos -- #
+# -- -------------------------------------------------------------------- Para descargar todos los datos -- #
 # Token para API de OANDA
 OA_Ak = '7' + '9ae0a52f8e483facdd81f5b316a8ef8-99fb5554f4739c76535b209044f7de2' + '6'
 OA_In = "EUR_USD"                  # Instrumento
@@ -38,21 +39,21 @@ OA_Gn = "M5"                        # Granularidad de velas
 fini = pd.to_datetime("2009-01-06 00:00:00").tz_localize('GMT')  # Fecha inicial
 ffin = pd.to_datetime("2019-12-06 00:00:00").tz_localize('GMT')  # Fecha final
 
-pd.set_option('display.max_rows', None)                   # sin limite de renglones maximos para mostrar pandas
-pd.set_option('display.max_columns', None)                # sin limite de columnas maximas para mostrar pandas
-pd.set_option('display.width', None)                      # sin limite el ancho del display
-pd.set_option('display.expand_frame_repr', False)         # visualizar todas las columnas de un dataframe
-pd.options.mode.chained_assignment = None                 # para evitar el warning enfadoso de indexacion
+pd.set_option('display.max_rows', None)             # sin limite de renglones maximos para mostrar pandas
+pd.set_option('display.max_columns', None)          # sin limite de columnas maximas para mostrar pandas
+pd.set_option('display.width', None)                # sin limite el ancho del display
+pd.set_option('display.expand_frame_repr', False)   # visualizar todas las columnas de un dataframe
+pd.options.mode.chained_assignment = None           # para evitar el warning enfadoso de indexacion
 
 
-# -- -------------------------------------------------------------------- FUNCION: Obtencion de precios historicos -- #
-# -- -------------------------------------------------------------------- ---------------------------------------- -- #
+# -- ---------------------------------------------------------- FUNCION: Obtencion de precios historicos -- #
+# -- ---------------------------------------------------------- ---------------------------------------- -- #
 
 def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
     """
     :param p0_fini: str : fecha inicial para pedir precios : "2009-01-06 00:00:00"
     :param p1_ffin: str : fecha final para pedir precios : "2019-12-01 00:00:00"
-    :param p2_gran: str : granularidad para pedir precios : S5, S10, S30, M1, M5, M15, M30, H1, H4, H8, D, W, M
+    :param p2_gran: str : granularidad para pedir precios : S5, S10, S30, M1, M5, M15, M30, H1, H4, H8, D, W
     :param p3_inst: str : instrumento sobre el cual peedir precios (Acorde a nomenclatura OANDA) : EUR_USD
     :param p4_oatk: str : llave privada de oanda para peticiones con api : alfanumerica
     :param p5_ginc: int : numero limite de datos historicos a pedir segun Oanda : 5000
@@ -183,12 +184,13 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
 
 print('Fin proceso cargar datos')
 
-# -- -------------------------------------------------------------------------------- Proceso de descarga completo -- #
-# -- -------------------------------------------------------------------------------- ---------------------------- -- #
+# -- ---------------------------------------------------------------------- Proceso de descarga completo -- #
+# -- ---------------------------------------------------------------------- ---------------------------- -- #
 # -- Solo correr esta parte si se quiere descargar todos los precios
 
 # Descagar todos los precios necesarios (descomentar la linea de import funciones as fn)
-# df_pe = f_precios_masivos(p0_fini=fini, p1_ffin=ffin, p2_gran=OA_Gn, p3_inst=OA_In, p4_oatk=OA_Ak, p5_ginc=5000)
+# df_pe = f_precios_masivos(p0_fini=fini, p1_ffin=ffin, p2_gran=OA_Gn,
+#                           p3_inst=OA_In, p4_oatk=OA_Ak, p5_ginc=5000)
 
 # Escribir dataframe en un archivo csv
 # df_pe.to_csv(r"archivos/Eur_Usd_M5.csv", index=False)

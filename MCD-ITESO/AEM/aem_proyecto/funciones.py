@@ -1,29 +1,29 @@
 
-# -- ------------------------------------------------------------------------------------------------------------- -- #
+# -- --------------------------------------------------------------------------------------------------- -- #
 # -- Proyecto:
 # -- Codigo:
 # -- Autor: Francisco ME
-# -- ------------------------------------------------------------------------------------------------------------- -- #
+# -- --------------------------------------------------------------------------------------------------- -- #
 
-# Cargar librerias y dependencias
-import numpy as np                                        # funciones numericas
-import pandas as pd                                       # dataframes y utilidades
-from statsmodels.tsa.api import acf, pacf                 # funciones de econometria
+# -- Cargar librerias y dependencias
+import numpy as np                                     # funciones numericas
+import pandas as pd                                    # dataframes y utilidades
+from statsmodels.tsa.api import acf, pacf              # funciones de econometria
 
-from sklearn.preprocessing import StandardScaler          # estandarizacion de variables
-from sklearn.decomposition import PCA                     # analisis de componentes principales (PCA)
-import statsmodels.api as sm                              # utilidades para modelo regresion lineal
-from sklearn.model_selection import train_test_split      # separacion de conjunto de entrenamiento y prueba
+from sklearn.preprocessing import StandardScaler       # estandarizacion de variables
+from sklearn.decomposition import PCA                  # analisis de componentes principales (PCA)
+import statsmodels.api as sm                           # utilidades para modelo regresion lineal
+from sklearn.model_selection import train_test_split   # separacion de conjunto de entrenamiento y prueba
 
-pd.set_option('display.max_rows', None)                   # sin limite de renglones maximos para mostrar pandas
-pd.set_option('display.max_columns', None)                # sin limite de columnas maximas para mostrar pandas
-pd.set_option('display.width', None)                      # sin limite el ancho del display
-pd.set_option('display.expand_frame_repr', False)         # visualizar todas las columnas de un dataframe
-pd.options.mode.chained_assignment = None                 # para evitar el warning enfadoso de indexacion
+pd.set_option('display.max_rows', None)                # sin limite de renglones maximos para mostrar pandas
+pd.set_option('display.max_columns', None)             # sin limite de columnas maximas para mostrar pandas
+pd.set_option('display.width', None)                   # sin limite el ancho del display
+pd.set_option('display.expand_frame_repr', False)      # visualizar todas las columnas de un dataframe
+pd.options.mode.chained_assignment = None              # para evitar el warning enfadoso de indexacion
 
 
-# -- -------------------------------------------------- FUNCION: Generacion de variables EXOGENAS series de tiempo -- #
-# -- ---------------------------------------------------------------------------------------------- Version manual -- #
+# -- ---------------------------------------- FUNCION: Generacion de variables EXOGENAS series de tiempo -- #
+# -- ------------------------------------------------------------------------------------ Version manual -- #
 
 def f_features_exo(p_datos):
     """
@@ -42,20 +42,21 @@ def f_features_exo(p_datos):
     # Ordernarlos de forma ascendente en el tiempo
     datos.sort_values(by=['timestamp'], inplace=True, ascending=True)
 
-    # Agregar columna con numero de año y semana (Servira para empatar fecha de indicador con fecha de precio)
-    datos['Year_Week'] = [datos.loc[i, 'timestamp'].strftime("%Y") + '_' + datos.loc[i, 'timestamp'].strftime("%W")
+    # Agregar columna con numero de año y semana (para empatar fecha de indicador con fecha de precio)
+    datos['Year_Week'] = [datos.loc[i, 'timestamp'].strftime("%Y") + '_' +
+                          datos.loc[i, 'timestamp'].strftime("%W")
                           for i in range(0, len(datos['timestamp']))]
 
     return datos
 
 
-# -- ------------------------------------------------- FUNCION: Generacion de variables ENDOGENAS series de tiempo -- #
-# -- ---------------------------------------------------------------------------------------------- Version manual -- #
+# -- --------------------------------------- FUNCION: Generacion de variables ENDOGENAS series de tiempo -- #
+# -- ------------------------------------------------------------------------------------ Version manual -- #
 
 def f_features_end(p_datos):
     """
     :param p_datos: pd.DataFrae : dataframe con 5 columnas 'timestamp', 'open', 'high', 'low', 'close'
-        :return: r_features : dataframe con 5 columnas originales, nombres cohercionados. + Features generados
+        :return: r_features : dataframe con 5 columnas, nombres cohercionados + Features generados
 
     # Debuging
     p_datos = df_precios
@@ -131,28 +132,14 @@ def f_features_end(p_datos):
     # convertir a numeros tipo float las columnas
     r_features.iloc[:, 1:] = r_features.iloc[:, 1:].astype(float)
     # estandarizacion de todas las variables independientes
-    r_features[list(r_features.columns[1:])] = StandardScaler().fit_transform(r_features[list(r_features.columns[1:])])
+    lista = r_features[list(r_features.columns[1:])]
+    r_features[list(r_features.columns[1:])] = StandardScaler().fit_transform(lista)
 
     return r_features
 
 
-# -- ----------------------------------------------------------------------------- FUNCION: Seleccion de variables -- #
-# -- ------------------------------------------------------------------------------ ------------------------------ -- #
-
-def f_feature_importance(p_datos):
-    """
-    :param p_datos:
-    :return:
-    p_datos = df_datos
-    """
-
-    # np.corrcoef()
-
-    return 1
-
-
-# -- -------------------------------------------------------------------------------- FUNCION: Ajustar RLM a datos -- #
-# -- -------------------------------------------------------------------------------- ---------------------------- -- #
+# -- ---------------------------------------------------------------------- FUNCION: Ajustar RLM a datos -- #
+# -- ---------------------------------------------------------------------- ---------------------------- -- #
 
 def f_rlm(p_datos, p_y):
     """
@@ -169,7 +156,8 @@ def f_rlm(p_datos, p_y):
     x_multiple = np.array(datos.iloc[:, 1:])
 
     # datos para entrenamiento y prueba
-    train_x, test_x, train_y, test_y = train_test_split(x_multiple, y_multiple, test_size=0.8, shuffle=False)
+    train_x, test_x, train_y, test_y = train_test_split(x_multiple, y_multiple,
+                                                        test_size=0.8, shuffle=False)
 
     # Agregar interceptos a X en entrenamiento y prueba
     train_x_betha = sm.add_constant(train_x)
@@ -206,7 +194,8 @@ def f_rlm(p_datos, p_y):
     r_test_summary = r_test_modelo.summary()
     # DataFrame con nombre de parametros segun dataset, nombre de parametros y pvalues segun modelo
     r_df_test = pd.DataFrame({'df_params': ['intercepto'] + list(datos.columns[1:]),
-                              'm_params': r_test_modelo.model.data.param_names, 'pv_params': r_test_modelo.pvalues})
+                              'm_params': r_test_modelo.model.data.param_names,
+                              'pv_params': r_test_modelo.pvalues})
     # valor de AIC del modelo
     r_test_aic = r_test_modelo.aic
     # valor de BIC del modelo
@@ -225,8 +214,8 @@ def f_rlm(p_datos, p_y):
     return r_d_modelo
 
 
-# -- -------------------------------------------------------------------------------- FUNCION: Aplicar PCA a datos -- #
-# -- -------------------------------------------------------------------------------- ---------------------------- -- #
+# -- ---------------------------------------------------------------------- FUNCION: Aplicar PCA a datos -- #
+# -- ---------------------------------------------------------------------- ---------------------------- -- #
 
 def f_pca(p_datos, p_exp):
     """
@@ -271,8 +260,8 @@ def f_pca(p_datos, p_exp):
     return r_datos_pca
 
 
-# -- -------------------------------------------------------------------------------- FUNCION: Desempeño de modelo -- #
-# -- -------------------------------------------------------------------------------- ---------------------------- -- #
+# -- ---------------------------------------------------------------------- FUNCION: Desempeño de modelo -- #
+# -- ---------------------------------------------------------------------- ---------------------------- -- #
 
 def f_analisis_mod(p_datos):
     """
@@ -289,5 +278,20 @@ def f_analisis_mod(p_datos):
     # vif = pd.DataFrame()
     # vif["VIF Factor"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
     # vif["features"] = X.columns
+
+    return p_datos
+
+
+# -- ------------------------------------------------------------------- FUNCION: Seleccion de variables -- #
+# -- -------------------------------------------------------------------- ------------------------------ -- #
+
+def f_feature_importance(p_datos):
+    """
+    :param p_datos:
+    :return:
+    p_datos = df_datos
+    """
+
+    # np.corrcoef()
 
     return p_datos
