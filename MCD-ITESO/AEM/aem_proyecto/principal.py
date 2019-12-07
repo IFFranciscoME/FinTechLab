@@ -10,6 +10,7 @@ import funciones as fn                          # Importar funcione especiales h
 import visualizaciones as vs                    # Importar funciones para visualizaciones
 from datos import df_pe_w as df_precios_w       # Importar los precios historicos semanales
 from datos import df_ce_w as df_ce_w            # Importar los indicadores económicos historicos
+from datos import df_pe_m5 as df_precios_m5     # Importar los indicadores económicos historicos
 
 # -- -------------------------------------------------------------------------------------- Introduccion -- #
 # -- contexto, definiciones
@@ -50,6 +51,8 @@ res2 = fn.f_rlm(p_datos=df_pca, p_y='pca_y')
 
 # Para saber si es conveniente utilizar la comunicación de indicadores economicos
 # como "gatillo" que genera los patrones en las series de tiempo.
+
+res3_anova = fn.f_anova(p_datos_ce=df_ce_w, p_datos_ph=df_precios_m5)
 
 # definicion de criterio para elegir 1 candidato de indicador para siguiente paso
 

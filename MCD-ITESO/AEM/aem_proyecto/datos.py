@@ -36,7 +36,7 @@ df_ce_w = df_ce_w.reset_index(drop=True)
 # Token para API de OANDA
 OA_Ak = '7' + '9ae0a52f8e483facdd81f5b316a8ef8-99fb5554f4739c76535b209044f7de2' + '6'
 OA_In = "EUR_USD"                  # Instrumento
-OA_Gn = "M5"                        # Granularidad de velas
+OA_Gn = "M1"                        # Granularidad de velas
 fini = pd.to_datetime("2009-01-06 00:00:00").tz_localize('GMT')  # Fecha inicial
 ffin = pd.to_datetime("2019-12-06 00:00:00").tz_localize('GMT')  # Fecha final
 
@@ -93,7 +93,7 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
           'H1': 60*60, 'H4': 60*60*4, 'H8': 60*60*8, 'D': 60*60*24, 'W': 60*60*24*7, 'M': 60*60*24*7*4}
 
     # -- para el caso donde con 1 peticion se cubran las 2 fechas
-    if int((p1_ffin - p0_fini).total_seconds() / gn[p2_gran]) < 5000:
+    if int((p1_ffin - p0_fini).total_seconds() / gn[p2_gran]) < 4999:
 
         # Fecha inicial y fecha final
         f1 = p0_fini.strftime('%Y-%m-%dT%H:%M:%S')
@@ -183,15 +183,15 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
         return r_df_final
 
 
-print('Fin proceso cargar datos')
+print('Fin proceso cargar datos ligeros')
 
 # -- ---------------------------------------------------------------------- Proceso de descarga completo -- #
 # -- ---------------------------------------------------------------------- ---------------------------- -- #
 # -- Solo correr esta parte si se quiere descargar todos los precios
 
 # Descagar todos los precios necesarios (descomentar la linea de import funciones as fn)
-# df_pe = f_precios_masivos(p0_fini=fini, p1_ffin=ffin, p2_gran=OA_Gn,
-#                           p3_inst=OA_In, p4_oatk=OA_Ak, p5_ginc=5000)
+df_pe = f_precios_masivos(p0_fini=fini, p1_ffin=ffin, p2_gran=OA_Gn,
+                          p3_inst=OA_In, p4_oatk=OA_Ak, p5_ginc=4950)
 
 # Escribir dataframe en un archivo csv
-# df_pe.to_csv(r"archivos/Eur_Usd_M5.csv", index=False)
+df_pe.to_csv(r"archivos/Eur_Usd_M1.csv", index=False)

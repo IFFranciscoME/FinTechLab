@@ -25,29 +25,68 @@ pd.options.mode.chained_assignment = None              # para evitar el warning 
 # -- ---------------------------------------- FUNCION: Generacion de variables EXOGENAS series de tiempo -- #
 # -- ------------------------------------------------------------------------------------ Version manual -- #
 
-def f_features_exo(p_datos):
+def f_anova(p_datos_ce, p_datos_ph):
     """
-    :param p_datos:
+    :param p_datos_ph:
+    :param p_datos_ce:
     :return:
 
-    p_datos = df_ce_w
+    p_datos_ce = df_ce_w
+    p_datos_ph = df_precios_m5
     """
 
-    datos = p_datos
+    def f_reaccion(p0_i, p1_ad, p2_pe, p3_ce):
+        """
+        :param p0_i: int : indexador para iterar en los datos de entrada
+        :param p1_ad: int : cantidad de precios futuros que se considera la ventana (t + p1_ad)
+        :param p2_pe: DataFrame : precios en OHLC con columnas: timestamp, open, high, low, close
+        :param p3_ce: DataFrame : calendario economico con columnas: timestamp, name,
+                                                                     actual, consensus, previous
 
-    # Convertir columna de fechas a datetime
-    datos['timestamp'] = pd.to_datetime(datos['timestamp'])
-    datos['timestamp'] = datos['timestamp'].dt.tz_localize('UTC')
+        :return: resultado: diccionario con resultado final con 3 elementos como resultado
 
-    # Ordernarlos de forma ascendente en el tiempo
-    datos.sort_values(by=['timestamp'], inplace=True, ascending=True)
+        # debugging
+        p0_i = 16
+        p0_ad = 5
+        p2_pe = pd.DataFrame({'timestamp': 2009-01-06 05:00:00,
+                              'open': 1.3556, 'high': 1.3586, 'low': 1.3516, 'close': 1.3543})
+        p3_ce = pd.DataFrame({})
+        """
+        print(p0_i)
+        # Encontrar indice donde el timestamp sea igual al
+        indice_1 = np.where(p2_pe['timestamp'] == p3_ce['timestamp'][p0_i])[0][0]
+        indice_2 = indice_1 + p1_ad
+        ho = round((max(p2_pe['high'][indice_1:indice_2]) - p2_pe['open'][indice_1]) * 10000, 2)
+        ol = round((p2_pe['open'][indice_1] - min(p2_pe['low'][indice_1:indice_2])) * 10000, 2)
 
-    # Agregar columna con numero de año y semana (para empatar fecha de indicador con fecha de precio)
-    datos['Year_Week'] = [datos.loc[i, 'timestamp'].strftime("%Y") + '_' +
-                          datos.loc[i, 'timestamp'].strftime("%W")
-                          for i in range(0, len(datos['timestamp']))]
+        # diccionario con resultado final
+        resultado = {'ho': ho, 'ol': ol}
 
-    return datos
+        return resultado
+
+    # datos de calendario economico
+    p_datos_ce['timestamp'] = pd.to_datetime(p_datos_ce['timestamp']).dt.floor('Min')
+    p_datos_ce['timestamp'] = p_datos_ce['timestamp'].dt.tz_localize('UTC')
+
+    # datos de precios historicos
+    p_datos_ph['timestamp'] = pd.to_datetime(p_datos_ph['timestamp']).dt.floor('Min')
+    p_datos_ph['timestamp'] = p_datos_ph['timestamp'].dt.tz_localize('UTC')
+
+    # cantidad de precios a futuro a considerar
+    psiguiente = 7
+
+    # escenarios para clasificar los eventos
+    escenarios = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+
+    # reaccion del precio para cada escenario
+    d_reaccion = [f_reaccion(p0_i=i, p1_ad=psiguiente, p2_pe=p_datos_ph, p3_ce=p_datos_ce)
+                  for i in range(0, len(p_datos_ce['timestamp']))]
+
+    # acomodar resultados en columnas
+    p_datos_ce['ho'] = [d_reaccion[j]['ho'] for j in range(0, len(p_datos_ce['timestamp']))]
+    p_datos_ce['ol'] = [d_reaccion[j]['ol'] for j in range(0, len(p_datos_ce['timestamp']))]
+
+    return p_datos_ce
 
 
 # -- --------------------------------------- FUNCION: Generacion de variables ENDOGENAS series de tiempo -- #
