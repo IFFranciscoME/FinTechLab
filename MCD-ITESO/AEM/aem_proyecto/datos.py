@@ -1,8 +1,9 @@
 
 # -- --------------------------------------------------------------------------------------------------- -- #
-# -- Proyecto:
-# -- Codigo:
-# -- Autor: Francisco ME
+# -- Proyecto: Proyecto final de materia Análisis Estadístico Multivariado                               -- #
+# -- Codigo: datos.py - codigo con funciones de descarga y tratamiento de datos                          -- #
+# -- Repositorio: https://github.com/IFFranciscoME/FinTechLab/tree/master/MCD-ITESO/AEM/aem_proyecto     -- #
+# -- Autor: Francisco ME                                                                                 -- #
 # -- --------------------------------------------------------------------------------------------------- -- #
 
 import numpy as np                                        # funciones numericas

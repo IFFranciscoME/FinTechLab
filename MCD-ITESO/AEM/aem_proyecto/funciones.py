@@ -1,11 +1,11 @@
 
 # -- --------------------------------------------------------------------------------------------------- -- #
-# -- Proyecto:
-# -- Codigo:
-# -- Autor: Francisco ME
+# -- Proyecto: Proyecto final de materia Análisis Estadístico Multivariado                               -- #
+# -- Codigo: funciones.py - codigo con funciones de modelos y operaciones complejas                      -- #
+# -- Repositorio: https://github.com/IFFranciscoME/FinTechLab/tree/master/MCD-ITESO/AEM/aem_proyecto     -- #
+# -- Autor: Francisco ME                                                                                 -- #
 # -- --------------------------------------------------------------------------------------------------- -- #
 
-# -- Cargar librerias y dependencias
 import numpy as np                                     # funciones numericas
 import pandas as pd                                    # dataframes y utilidades
 from statsmodels.tsa.api import acf, pacf              # funciones de econometria
