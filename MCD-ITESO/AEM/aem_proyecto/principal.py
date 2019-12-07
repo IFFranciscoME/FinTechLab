@@ -1,16 +1,13 @@
 
 # -- ------------------------------------------------------------------------------------------------------------- -- #
-# -- Proyecto: Regresion Lineal Multiple para Series de Tiempo
-# -- Codigo: Modelo 1 - RLM con variables endogenas.
+# -- Proyecto:
+# -- Codigo:
 # -- Autor: Francisco ME
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
-import funciones as fn
-from datos import df_pe_m5 as df_precios_m5
-from datos import df_pe_w as df_precios_w
-from datos import df_ce_w as df_ce_w
-
-# -- precios semanales
+import funciones as fn                          # Importar funcione especiales hechas para este proyecto
+from datos import df_pe_w as df_precios_w       # Importar los precios historicos semanales
+from datos import df_ce_w as df_ce_w            # Importar los indicadores económicos historicos
 
 # -- generacion de variables endogenas
 df_datos_end = fn.f_features_end(p_datos=df_precios_w)

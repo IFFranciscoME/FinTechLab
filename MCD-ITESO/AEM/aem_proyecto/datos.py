@@ -4,7 +4,8 @@
 # -- Codigo:
 # -- Autor: Francisco ME
 # -- ------------------------------------------------------------------------------------------------------------- -- #
-import numpy as np
+
+import numpy as np                                        # funciones numericas
 import pandas as pd                                       # dataframes y utilidades
 from datetime import timedelta                            # diferencia entre datos tipo tiempo
 from oandapyV20 import API                                # conexion con broker para informacion historica
@@ -14,7 +15,7 @@ import oandapyV20.endpoints.instruments as instruments    # informacion de preci
 # leer archivo de precios historicos ya descargados previamente
 df_pe_m5 = pd.read_csv("archivos/Eur_Usd_M5.csv")
 df_pe_w = pd.read_csv("archivos/Eur_Usd_W.csv")
-df_ce = pd.read_csv("archivos/calendario_economico.csv")
+df_ce = pd.read_csv("archivos/Calendario_Economico.csv")
 
 # seleccionar indicadores que hayan sido publicados 4 veces en cada mes (semanales)
 df_ce = df_ce.iloc[np.where(df_ce['timestamp'] == '01/04/2016 19:30:00')[0][0]:len(df_ce['timestamp'])]
@@ -180,6 +181,8 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
         return r_df_final
 
 
+print('Fin proceso cargar datos')
+
 # -- -------------------------------------------------------------------------------- Proceso de descarga completo -- #
 # -- -------------------------------------------------------------------------------- ---------------------------- -- #
 # -- Solo correr esta parte si se quiere descargar todos los precios
@@ -189,4 +192,3 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
 
 # Escribir dataframe en un archivo csv
 # df_pe.to_csv(r"archivos/Eur_Usd_M5.csv", index=False)
-
