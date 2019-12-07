@@ -1,17 +1,17 @@
 
 # -- ------------------------------------------------------------------------------------------------------------- -- #
-# -- Proyecto: Regresion Lineal Multiple para Series de Tiempo
-# -- Codigo: Funcion para solicitar datos de Oanda
+# -- Proyecto:
+# -- Codigo:
 # -- Autor: Francisco ME
 # -- ------------------------------------------------------------------------------------------------------------- -- #
 
 # Cargar librerias y dependencias
-import pandas as pd
-import numpy as np
-from statsmodels.tsa.api import acf, pacf
+import numpy as np                                        # funciones numericas
+import pandas as pd                                       # dataframes y utilidades
+from statsmodels.tsa.api import acf, pacf                 # funciones de econometria
 
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler          # estandarizacion de variables
+from sklearn.decomposition import PCA                     # analisis de componentes principales (PCA)
 import statsmodels.api as sm                              # utilidades para modelo regresion lineal
 from sklearn.model_selection import train_test_split      # separacion de conjunto de entrenamiento y prueba
 
@@ -114,17 +114,11 @@ def f_features_end(p_datos):
         # resago n de ol
         datos['lag_ol_' + str(n + 1)] = np.log(datos['ol'].shift(n + 1))
 
-        # # resago n de hl
-        # datos['lag_hl_' + str(n + 1)] = np.log(datos['hl'].shift(n + 1))
-
         # promedio movil de ventana n
         datos['ma_ol_' + str(n + 2)] = datos['ol'].rolling(n + 2).mean()
 
         # promedio movil de ventana n
         datos['ma_ho_' + str(n + 2)] = datos['ho'].rolling(n + 2).mean()
-
-        # # promedio movil de ventana n
-        # datos['ma_hl_' + str(n + 2)] = datos['hl'].rolling(n + 2).mean()
 
     # asignar timestamp como index
     datos.index = pd.to_datetime(datos['timestamp'])
